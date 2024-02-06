@@ -56,9 +56,7 @@ export type LogMessage = {
   readonly optionalParams: readonly any[];
 };
 
-export type PipeFn<T, U> = (data: T, info?: U) => T;
-
 /** Log Message mapping layer, common use-case is sensitive data sanitization */
 export type LogTranslator<U = unknown> = {
-  readonly map: PipeFn<LogMessage, U>;
+  readonly map: (data: LogMessage, info?: U) => LogMessage;
 };

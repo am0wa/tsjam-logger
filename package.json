@@ -19,7 +19,7 @@
     "test": "node ./node_modules/jest/bin/jest.js --config jest.config.js",
     "patch-version": "npm version patch",
     "prepublishOnly": "npm run clean && npm run build && npm run test",
-    "postpublish": "git push --tags origin master",
+    "postpublish": "git push --tags origin",
     "prepare": "husky install"
   },
   "files": [
