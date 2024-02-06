@@ -1,0 +1,9 @@
+{
+  "extends": "../tsconfig.json",
+  "include": ["./**/*.ts"], // if in root = [tests/**/*.ts]
+  "compilerOptions": {
+    "types": ["node","jest"],
+    "noImplicitReturns": false,
+    "noUnusedParameters": false
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "extends": "@tsjam/web-config-base/tsconfig.base.json",
+  "compilerOptions": {
+    "target": "es2018", // ES9
+    /* Paths */
+    "baseUrl": ".",
+    "outDir": "lib",
+    "paths": {
+      "*": ["*", "src/*"]
+    }
+  },
+  "exclude": [
+    "lib/*",
+    "packages/*",
+    "node_modules/**"
+  ]
+}

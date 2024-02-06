@@ -1,0 +1,53 @@
+{
+  "name": "@tsjam/logger",
+  "version": "1.0.1",
+  "description": "Vanilla TypeScript Logger with multiple output channels",
+  "main": "lib/index.js",
+  "typings": "lib/index.d.ts",
+  "repository": "https://github.com/am0wa/tsjam-logger",
+  "license": "MIT",
+  "keywords": [
+    "typescript",
+    "utils",
+    "logger",
+    "remote logging"
+  ],
+  "scripts": {
+    "build": "tsc -b src/tsconfig.json",
+    "clean": "rimraf lib",
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
+    "test": "node ./node_modules/jest/bin/jest.js --config jest.config.js",
+    "patch-version": "npm version patch",
+    "prepublishOnly": "npm run clean && npm run build && npm run test",
+    "postpublish": "git push --tags origin master",
+    "prepare": "husky install"
+  },
+  "files": [
+    "lib",
+    "tsconfig.json",
+    "!**/tsconfig.tsbuildinfo"
+  ],
+  "devDependencies": {
+    "@tsjam/eslint-config-recommended": "^0.1.0",
+    "@tsjam/jest-config-recommended": "^0.1.1",
+    "@tsjam/web-config-base": "^0.1.1",
+    "typescript": "^5.3.3"
+  },
+  "prettier": "@tsjam/web-config-base/prettier.config.js",
+  "lint-staged": {
+    "*.{ts,tsx,js}": "eslint --cache --fix",
+    "*.{ts,tsx,js,css,md}": "prettier --write"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}

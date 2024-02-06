@@ -1,0 +1,47 @@
+# See https://help.github.com/ignore-files/ for more about ignoring files.
+
+# dependencies
+node_modules
+
+# testing
+/coverage
+
+# production (added to git in order to distribute this folder)
+/build
+/dist
+/lib
+*.tsbuildinfo
+
+# docs
+/docs
+
+# logs & reports
+diff
+coverage
+*.log
+
+# misc
+.DS_Store
+.env.*
+
+
+# ide
+.idea/*
+*.iml
+.vscode/*
+
+# cache
+.eslintcache
+
+# local package unpack
+/package
+*.tgz
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+yarn.lock
+package-lock.json
+
+
