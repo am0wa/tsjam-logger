@@ -2,25 +2,32 @@
 
 **Vanilla TypeScript Logger**
 
-Not opinionated ts Logger with multiple output channels.
+Not opinionated ts Logger with multiple output channels 🍰
+
+[![MIT licensed](https://img.shields.io/badge/license-MIT-blue)](https://github.com/am0wa/tsjam-logger/blob/main/LICENSE)
+[![npm version](https://badge.fury.io/js/%40tsjam%2Flogger.svg)](https://badge.fury.io/js/%40tsjam%2Flogger)
+[![multichannel](https://img.shields.io/badge/multichannel%20output-8A2BE2)](#usage-bake-ur-own-logger)
+[![hashtags](https://img.shields.io/badge/%23hashtags-blue)](#tagged-logger)
+[![timestamps](https://img.shields.io/badge/timestamps-blue)](#tagged-logger)
 
 **Advantages:**
 
-- **appId** (distinguish log between multiple instances)
-- **tags** support (tag child loggers, find and filter certain logs super-fast)
+- **appId** (distinguish log between multiple app instances)
+- **timestamps** (milliseconds matter)
+- **hashtags** (tag child loggers, find and filter certain logs super-fast)
 - **multiple channels** output (add ur own output: e.g. parallel remote monitoring)
 - **buffering** (useful for crash reporting)
-- **sanitization** of sensitive fields (perf optimized, add `{ sanitize: ['sessionId'] }`)
-- **stack output** of any call (configurable, add `{ withStack: true }`)
+- **sanitization** of sensitive fields (perf optimized, `{ sanitize: ['sessionId'] }`)
+- **stack output** of any call (configurable,`{ withStack: true }`)
 - **fully customizable** (use your own format)
 - **fair Errors serialization** into string (check `JSON.stringify(new Error('Oops')); // {}`)
-- **strigify** payload at any moment (add `{ stringify: true }`)
+- **strigify** payload at any moment (`{ stringify: true }`)
 - **zero third-party dependencies**
 
 **Output example:**  
-`[app1611253982848][2024-01-21T18:33:02.981Z][info][#user] Logged In: { username: Bob, password: '***' }`
+`[app161125][2024-01-21T18:33:02.981Z][info][#user] Logged In: { username: Bob, password: '***' }`
 
-### Installing
+## Installation
 
 ```
 npm install @tsjam/logger
@@ -34,7 +41,7 @@ npm install @tsjam/logger
 import { jamLogger } from '@tsjam/logger';
 
 jamLogger.info('Hello Logger!');
-// [app1611253982848][2024-01-21T18:33:02.981Z][info] Hello Logger!
+// [app161125][2024-01-21T18:33:02.981Z][info] Hello Logger!
 ```
 
 #### Tagged Logger
@@ -42,22 +49,24 @@ jamLogger.info('Hello Logger!');
 ```typescript
 const logger = jamLogger.tagged('user'); // child logger with added tags
 logger.info('Greetings for', { name: 'Bob' });
-// [app1611253982848][2024-01-21T18:33:02.981Z][info][#user] Greetings for { name: 'Bob' }
+// [app161125][2024-01-21T18:33:02.981Z][info][#user] Greetings for { name: 'Bob' }
 ```
 
 single usage
 
 ```typescript
 jamLogger.info({ tags: ['#user', '#vip'] }, 'Greetings for', { name: 'John' });
-// [app1611253982848][2024-01-21T18:33:02.981Z][info][#user,#vip] Greetings for { name: 'John' }
+// [app161125][2024-01-21T18:33:02.981Z][info][#user,#vip] Greetings for { name: 'John' }
 ```
 
 #### Sensitive Fields Sanitization
 
 ```typescript
 jamLogger.debug({ sanitize: ['password'] }, 'Logged in', { name: 'Bob', password: 'ABC' });
-// [app1707238076394][2024-02-06T16:47:56.398Z][debug] Logged in  { name: 'Bob', password: '***' }
+// [app170723][2024-02-06T16:47:56.398Z][debug] Logged in  { name: 'Bob', password: '***' }
 ```
+
+**Note:** U could pass `Logger.sanitizeSensitiveTranslator` in createLogger to always sanitize sensitive fields by default. Yet it's more perf optimized to sanitize only when needed.
 
 #### Stack Visibility (show / hide / trim)
 
@@ -65,7 +74,7 @@ Shown on Error payloads (same like Console.log);
 
 ```typescript
 jamLogger.warn('Oops!', new Error('Something went wrong'));
-// [app1707238920096][2024-02-06T17:02:00.108Z][warn] Oops  Error: Something went wrong
+// [app170723][2024-02-06T17:02:00.108Z][warn] Oops  Error: Something went wrong
 //    at Object.<anonymous> (...tsjam-logger/tests/logging/log.util.spec.ts:10:49)
 //    at Promise.then.completed (...tsjam-logger/node_modules/jest-circus/build/utils.js:298:28)
 //    ...
@@ -75,17 +84,17 @@ Hide stack
 
 ```typescript
 jamLogger.warn({ withStack: false }, 'Oops!', new Error('Something went wrong'));
-// [app1707238920096][2024-02-06T17:02:00.108Z][warn] Oops  Error: Something went wrong
+// [app170723][2024-02-06T17:02:00.108Z][warn] Oops  Error: Something went wrong
 ```
 
 Show stack for any call
 
 ```typescript
 jamLogger.warn({ withStack: true }, 'Oops! Spoiled the milk!');
-// [app1707239639479][2024-02-06T17:13:59.496Z][warn] Oops! Spoiled the milk! Stack:
-// at Object.<anonymous> (...tsjam-logger/tests/logging/log.util.spec.ts:10:15)
-// at Promise.then.completed (...tsjam-logger/node_modules/jest-circus/build/utils.js:298:28)
-// ...
+// [app170723][2024-02-06T17:13:59.496Z][warn] Oops! Spoiled the milk! Stack:
+//   at Object.<anonymous> (...tsjam-logger/tests/logging/log.util.spec.ts:10:15)
+//   at Promise.then.completed (...tsjam-logger/node_modules/jest-circus/build/utils.js:298:28)
+//   ...
 ```
 
 **Note:** it's also possible to just trim the stack to a certain depth via `trimStack`
@@ -132,9 +141,18 @@ export const logger = createLogger({
 
 There are some built-in translators for log data u could use while baking ur own logger:
 
-- `Logger.jsonStringifyTranslator` – JSON.stringify All log data arguments (used when `{ stringify: true }` is passed in context)
-- `Logger.stringifyErrorStackTranslator` – Fairly serialize Error into string (used by default on Errors payload)
--
+- `Logger.jsonStringifyTranslator` – `stringify` log data (used on `{ stringify: true }` in context)
+- `Logger.stringifyErrorStackTranslator` – fairly serialize Error into string (used on Errors payload)
+- `Logger.sanitizeSensitiveTranslator` - sanitize any sensitive fields  
+   (used on `{ sanitize: ['password'] }` in context) defaults: `['password', 'token', 'secret', 'sessionId']`
+
+**Note:** U could apply these translators to a Single log call or to All logs as defaults.
+
+---
+
+### License
+
+@tsjam/logger is [MIT licensed](https://github.com/am0wa/tsjam-logger/blob/main/LICENSE)
 
 ---
 
