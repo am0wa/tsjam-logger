@@ -15,12 +15,12 @@
   "scripts": {
     "build": "tsc -b src/tsconfig.json",
     "clean": "rimraf lib",
-    "lint": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
+    "lint": "eslint src",
     "test": "node ./node_modules/jest/bin/jest.js --config jest.config.js",
     "patch-version": "npm version patch",
     "prepublishOnly": "npm run clean && npm run build && npm run test",
     "postpublish": "git push --tags origin",
-    "prepare": "husky install"
+    "prepare": "husky"
   },
   "files": [
     "lib",
@@ -28,10 +28,10 @@
     "!**/tsconfig.tsbuildinfo"
   ],
   "devDependencies": {
-    "@tsjam/eslint-config-recommended": "^0.1.0",
-    "@tsjam/jest-config-recommended": "^0.1.1",
-    "@tsjam/web-config-base": "^0.1.1",
-    "typescript": "^5.3.3"
+    "@tsjam/eslint-config-recommended": "^0.2.1",
+    "@tsjam/jest-config-recommended": "^0.1.2",
+    "@tsjam/web-config-base": "^0.2.0",
+    "typescript": "^5.7.2"
   },
   "prettier": "@tsjam/web-config-base/prettier.config.js",
   "lint-staged": {

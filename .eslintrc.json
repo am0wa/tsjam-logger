@@ -1,9 +1,0 @@
-{
-  "parserOptions": { "project": "./tsconfig.json" },
-  "ignorePatterns": ["node_modules", "lib", "docs", "*.js"],
-  "extends": ["@tsjam/eslint-config-recommended"],
-  "rules": {
-    "@typescript-eslint/member-ordering": 0,
-    "import/extensions": ["error", "ignorePackages", {"": "never"}]
-  }
-}

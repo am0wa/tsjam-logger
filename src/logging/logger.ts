@@ -51,7 +51,6 @@ export const emptyTranslator: LogTranslator = {
  */
 export const stringifyErrorStackTranslator: LogTranslator<number | undefined> = {
   map({ message, optionalParams }: LogMessage, trimStack): LogMessage {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return {
       message,
       // eslint-disable-next-line @typescript-eslint/no-unsafe-return

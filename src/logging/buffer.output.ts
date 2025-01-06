@@ -11,7 +11,6 @@ export class BufferOutput implements LogOutput {
 
   write(entry: LogEntry): void {
     if (this.buffer.length >= this.maxLogEntries) {
-      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
       this.flushOnOverload ? this.flush() : this.buffer.shift();
     }
     this.buffer.push(entry);

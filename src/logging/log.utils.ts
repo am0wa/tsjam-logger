@@ -25,7 +25,7 @@ export namespace logs {
       return data;
     }
     if (Array.isArray(data)) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-return,@typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions,@typescript-eslint/no-unsafe-return, @typescript-eslint/no-explicit-any
       return data.map((one) => sanitizeSensitiveData(one, deep, sensitiveFields)) as any;
     }
     const sanitized = { ...data };
