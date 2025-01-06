@@ -199,6 +199,10 @@ type LoggerOptions = {
 
 export const generateAppId = (): string => `app${Date.now()}`;
 
+const cacheMap = new Map<string, Logger>();
+
+const getCacheKey = (tags: readonly LogTag[]): string => [...tags].sort().join(',');
+
 /**
  * Factory method for Main application Logger.
  * Use `jamLogger` instance if you prefer out of box solution.
@@ -223,14 +227,24 @@ export const createLogger = ({
     debug: bakeLogWithLevel(LogLevel.Debug, logChannels, sortedTags, id, translator, errorPayloadStackLevel),
     channels: logChannels,
     tags: sortedTags,
-    tagged: (...newTags): Logger =>
-      createLogger({
+    tagged: (...newTags): Logger => {
+      const nextTags = new Set([...sortedTags, ...newTags]);
+      const cacheKey = getCacheKey([...nextTags]);
+
+      if (cacheMap.has(cacheKey)) {
+        return cacheMap.get(cacheKey)!;
+      }
+      const childLogger = createLogger({
         appId,
         channels,
         tags: sortedTags.concat(newTags),
         translator,
         errorPayloadStackLevel,
-      }),
+      });
+      cacheMap.set(cacheKey, childLogger);
+
+      return childLogger;
+    },
     appId: id,
   };
 };
