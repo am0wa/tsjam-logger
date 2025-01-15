@@ -1,100 +1,105 @@
 import { ConsoleOutput } from './console.output';
 import { LogLevel, LogLevels } from './level.enum';
-import { logs } from './log.utils';
+import { Logs } from './log.utils';
 import { LogOutputRegistry } from './output.registry';
-import { LogContext, LogEntry, LogMessage, LogOutputChannel, LogTag, LogTranslator } from './types';
-
-interface LogMethod {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (message: string, ...args: any[]): void;
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (context: LogContext, message: string, ...args: any[]): void;
-}
-
-/** Log distribution by available channels */
-const write = (logEntry: LogEntry, outputChannels: LogOutputRegistry): void => {
-  try {
-    outputChannels.byLogLevel(logEntry.level).forEach((o) => o.write(logEntry));
-  } catch (err) {
-    // tslint:disable-next-line:no-console
-    console.error('Failed to write Logs', err);
-  }
-};
-
-const stringifyError = (error: Error, numStackLines: number | undefined): string => {
-  if (numStackLines === 0) {
-    return `${error.name}: ${error.message}`;
-  }
-
-  const stack: string = error.stack ?? '';
-  const out: readonly string[] = stack.split('\n').filter((line) => !line.includes('logger.')); // remove logger related lines
-
-  return `${out.slice(0, numStackLines ?? out.length).join('\n')}`;
-};
+import { jsonStringifyTranslator } from './translators/json-stringify.translator';
+import { sanitizeSensitiveTranslator } from './translators/sanitize-sensitive.translator';
+import { stringifyErrorStackTranslator } from './translators/stringify-error.translator';
+import {
+  LogContext,
+  LogEntry,
+  Logger,
+  LoggerConfig,
+  LogMessage,
+  LogMeta,
+  LogMethod,
+  LogOutputChannel,
+  LogTag,
+  LogTranslator,
+} from './types';
 
 const createStack = (numStackLines: number | undefined): string => {
   if (numStackLines === 0) {
     return '';
   }
-  return stringifyError(new Error(), numStackLines).replace('Error:', 'Stack:');
+  return Logs.stringifyError(new Error(), numStackLines).replace('Error:', 'Stack:');
 };
 
-export const emptyTranslator: LogTranslator = {
-  map(logMessage: LogMessage): LogMessage {
-    return logMessage;
-  },
+const emptyTranslator: LogTranslator = {
+  map: (logMessage: LogMessage) => logMessage,
 };
+
+export const generateAppId = (): string => `app${Date.now()}`;
+export const defaultOutputChannels: readonly LogOutputChannel[] = [{ out: new ConsoleOutput() }];
 
 /**
- * Stringifies Error Stack.
+ * Factory method for Main application Logger.
+ * Use `jamLogger` instance if you prefer out of box solution.
+ *
+ * @see `LoggerConfig` to customize.
  */
-export const stringifyErrorStackTranslator: LogTranslator<number | undefined> = {
-  map({ message, optionalParams }: LogMessage, trimStack): LogMessage {
+export const createLogger = (config?: LoggerConfig): Logger => {
+  return JamLogger.create(config);
+};
+
+export class JamLogger implements Logger {
+  static readonly defaultInstance = JamLogger.create();
+
+  /** Logger with same config would be created only once and shared across the app */
+  private static instances = new WeakMap<LoggerConfig, Logger>();
+
+  static create(config: LoggerConfig = {}): Logger {
+    const instance = JamLogger.instances.get(config) ?? new JamLogger({ ...config });
+    JamLogger.instances.set(config, instance);
+    return instance;
+  }
+
+  readonly appId: string;
+  readonly tags: readonly LogTag[];
+  readonly channels: LogOutputRegistry;
+  readonly errorPayloadStackLevel: LogLevel;
+  readonly translator: LogTranslator;
+
+  metadata: LogMeta;
+
+  protected constructor({
+    appId = generateAppId(),
+    channels = defaultOutputChannels,
+    tags = [],
+    errorPayloadStackLevel = LogLevel.Debug,
+    translator = emptyTranslator,
+    metadata = {},
+  }: LoggerConfig) {
+    this.appId = appId;
+    this.tags = [...tags].sort();
+    this.channels = new LogOutputRegistry(channels);
+    this.errorPayloadStackLevel = errorPayloadStackLevel;
+    this.translator = translator;
+    this.metadata = metadata;
+  }
+
+  readonly error: LogMethod = (...args) => this.logMessage(LogLevel.Error, this.metadata, this.tags, ...args);
+  readonly warn: LogMethod = (...args) => this.logMessage(LogLevel.Warn, this.metadata, this.tags, ...args);
+  readonly info: LogMethod = (...args) => this.logMessage(LogLevel.Info, this.metadata, this.tags, ...args);
+  readonly debug: LogMethod = (...args) => this.logMessage(LogLevel.Debug, this.metadata, this.tags, ...args);
+
+  tagged(tags: LogTag): Logger {
+    const nextTags = [...new Set([...this.tags, ...tags])].sort();
+
+    const meta = { ...this.metadata };
     return {
-      message,
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-      optionalParams: optionalParams.map((one) => (one instanceof Error ? stringifyError(one, trimStack) : one)),
+      ...this,
+      metadata: { ...this.metadata },
+      error: (...args) => this.logMessage(LogLevel.Error, meta, nextTags, ...args),
+      warn: (...args) => this.logMessage(LogLevel.Warn, meta, nextTags, ...args),
+      info: (...args) => this.logMessage(LogLevel.Info, meta, nextTags, ...args),
+      debug: (...args) => this.logMessage(LogLevel.Debug, meta, nextTags, ...args),
+      tags: nextTags,
     };
-  },
-};
+  }
 
-/**
- * Invokes JSON.stringify on log data arguments.
- * Stringifies Errors fairly (not just {} as regular JSON.stringify(new Error('Boo')))
- */
-export const jsonStringifyTranslator: LogTranslator = {
-  map: ({ message, optionalParams }) => {
-    return {
-      message,
-      optionalParams: optionalParams.map((one) =>
-        one instanceof Error ? JSON.stringify(stringifyError(one, undefined)) : JSON.stringify(one),
-      ),
-    };
-  },
-};
-
-/**
- * Sanitizes all sensitive data that should not be exposed.
- * For performance optimization – it's good to sanitize data ONLY in places when it's actually needed.
- */
-export const sanitizeSensitiveTranslator: LogTranslator<readonly string[]> = {
-  map({ message, optionalParams }: LogMessage, sensitive = logs.commonSensitiveFields): LogMessage {
-    return { message, optionalParams: logs.sanitizeSensitiveData(optionalParams, true, sensitive) };
-  },
-};
-
-const bakeLogWithLevel = (
-  level: LogLevel,
-  outputChannels: LogOutputRegistry,
-  tags: readonly LogTag[],
-  appId?: string,
-  translator: LogTranslator = emptyTranslator,
-  // For compatibility with console default behaviour always show stack for error payload by default
-  errorPayloadStackLevel = LogLevel.Debug,
-): LogMethod => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return (...args: any[]): void => {
+  logMessage(level: LogLevel, meta: LogMeta, tags: readonly LogTag[], ...args: any[]): void {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const argsContext: LogContext =
       typeof args[0] === 'string'
@@ -102,14 +107,13 @@ const bakeLogWithLevel = (
             /* empty */
           }
         : { ...args.shift() };
-
     const context = {
       ...argsContext,
       tags: argsContext.tags?.length ? argsContext.tags?.concat(tags) : tags.slice(),
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const message: string = typeof args[0] === 'string' ? args.shift() : '';
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+    const message = typeof args[0] === 'string' ? (args.shift() as string) : '';
     let logMessage: LogMessage = { message, optionalParams: args };
 
     if (context.sanitize) {
@@ -118,7 +122,7 @@ const bakeLogWithLevel = (
 
     const hasErrorPayload = logMessage.optionalParams.some((one) => one instanceof Error);
     const trimStack =
-      context.withStack === false || LogLevels.severity(level) < LogLevels.severity(errorPayloadStackLevel)
+      context.withStack === false || LogLevels.severity(level) < LogLevels.severity(this.errorPayloadStackLevel)
         ? 0
         : context.trimStack;
 
@@ -129,128 +133,34 @@ const bakeLogWithLevel = (
     if (context.stringify) {
       logMessage = jsonStringifyTranslator.map(logMessage);
     }
-    logMessage = translator.map(logMessage);
+    logMessage = this.translator.map(logMessage);
 
-    // create synthetic stack if there is no Error payload.
     const stack = context.withStack && !hasErrorPayload ? createStack(trimStack) : '';
 
-    write(
-      {
-        date: new Date(),
-        level,
-        appId,
-        context,
-        message: logMessage.message,
-        data: logMessage.optionalParams,
-        stack,
-      },
-      outputChannels,
-    );
-  };
-};
+    this.write({
+      appId: this.appId,
+      date: new Date(),
+      level,
+      meta,
+      context,
+      message: logMessage.message,
+      data: logMessage.optionalParams,
+      stack,
+    });
+  }
 
-export namespace Logger {
-  let defaultChannels: readonly LogOutputChannel[] = [{ out: new ConsoleOutput() }];
-
-  export const setDefaultChannels = (...channels: readonly LogOutputChannel[]): void => {
-    defaultChannels = channels;
-  };
-
-  export const getDefaultChannels = (): readonly LogOutputChannel[] => {
-    return defaultChannels;
+  /** Log distribution by available channels */
+  readonly write = (logEntry: LogEntry): void => {
+    try {
+      this.channels.byLogLevel(logEntry.level).forEach((o) => o.write(logEntry));
+    } catch (err) {
+      console.error(`Failed to write Log entry: ${JSON.stringify(logEntry)}`, err);
+    }
   };
 }
 
 /**
- * Not Opinionated ts Logger with:
- * - appId (distinguish log between multiple instances)
- * - tags support (tag child loggers, find and filter certain logs super-fast)
- * - multiple channels output (you could add your own one: e.g. for parallel monitoring; @see `LoggerOptions`)
- * - sensitive fields sanitization (perf optimized, customizable: @see `LogContext`)
- * - stack output of any call (configurable: @see `LogContext`)
- */
-export interface Logger {
-  readonly appId: string;
-  readonly error: LogMethod;
-  readonly warn: LogMethod;
-  readonly info: LogMethod;
-  readonly debug: LogMethod;
-  readonly channels: LogOutputRegistry;
-  readonly tags: readonly LogTag[];
-  /**
-   * Creates Child logger with added tags.
-   * Note: AppId and Channels are reused and remain same.
-   */
-  readonly tagged: (...tags: readonly LogTag[]) => Logger;
-}
-
-type LoggerOptions = {
-  /** Application Id - to distinguish loggers of multiple instances of your Apps or services */
-  readonly appId?: string;
-  /** Stream your log simultaneously into multiple output channels */
-  readonly channels?: readonly LogOutputChannel[];
-  /** Tag your logger, so it would be easily to filter logs */
-  readonly tags?: readonly LogTag[];
-  /** Implement your custom transformation of your log data before write, e.g sanitize */
-  readonly translator?: LogTranslator;
-  /** Show Error payload stack for level not less than specified. LogLevel.Error by default */
-  readonly errorPayloadStackLevel?: LogLevel;
-};
-
-export const generateAppId = (): string => `app${Date.now()}`;
-
-const cacheMap = new Map<string, Logger>();
-
-const getCacheKey = (tags: readonly LogTag[]): string => [...tags].sort().join(',');
-
-/**
- * Factory method for Main application Logger.
- * Use `jamLogger` instance if you prefer out of box solution.
- *
- * @see `LoggerOptions` to customize.
- */
-export const createLogger = ({
-  appId,
-  channels,
-  tags,
-  translator,
-  errorPayloadStackLevel,
-}: LoggerOptions = {}): Logger => {
-  const sortedTags = tags?.slice() ?? [];
-  sortedTags.sort();
-  const id = appId ?? generateAppId();
-  const logChannels = new LogOutputRegistry(channels ?? Logger.getDefaultChannels());
-  return {
-    error: bakeLogWithLevel(LogLevel.Error, logChannels, sortedTags, id, translator, errorPayloadStackLevel),
-    warn: bakeLogWithLevel(LogLevel.Warn, logChannels, sortedTags, id, translator, errorPayloadStackLevel),
-    info: bakeLogWithLevel(LogLevel.Info, logChannels, sortedTags, id, translator, errorPayloadStackLevel),
-    debug: bakeLogWithLevel(LogLevel.Debug, logChannels, sortedTags, id, translator, errorPayloadStackLevel),
-    channels: logChannels,
-    tags: sortedTags,
-    tagged: (...newTags): Logger => {
-      const nextTags = new Set([...sortedTags, ...newTags]);
-      const cacheKey = getCacheKey([...nextTags]);
-
-      if (cacheMap.has(cacheKey)) {
-        return cacheMap.get(cacheKey)!;
-      }
-      const childLogger = createLogger({
-        appId,
-        channels,
-        tags: sortedTags.concat(newTags),
-        translator,
-        errorPayloadStackLevel,
-      });
-      cacheMap.set(cacheKey, childLogger);
-
-      return childLogger;
-    },
-    appId: id,
-  };
-};
-
-/**
- * Ready made - Application Logger with:
+ * Ready-made - Application Logger with:
  * - Console Output (same api)
  * - stacks for Error log Level
  * - auto-generated appId
@@ -260,4 +170,4 @@ export const createLogger = ({
  * log example:
  *  `[app1611253982848][2021-01-21T18:33:02.981Z][debug][#client] Logged In, { username: Bob, password: '***' }`
  */
-export const jamLogger = createLogger();
+export const jamLogger = JamLogger.defaultInstance;

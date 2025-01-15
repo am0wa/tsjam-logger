@@ -1,4 +1,5 @@
 import { LogLevel } from './level.enum';
+import { LogOutputRegistry } from './output.registry';
 
 /**
  * String label for quick search across logs.
@@ -26,13 +27,14 @@ export interface LogContext {
 }
 
 export type LogEntry = {
+  readonly appId: string;
   readonly date: Date;
   readonly level: LogLevel;
   readonly message: string;
-  readonly appId?: string;
   readonly context?: LogContext;
   readonly data?: readonly unknown[];
   readonly stack?: string;
+  readonly meta?: LogMeta;
 };
 
 /**
@@ -52,11 +54,60 @@ export type LogOutputChannel = {
 
 export type LogMessage = {
   readonly message: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  readonly optionalParams: readonly any[];
+  readonly optionalParams: readonly unknown[];
+  readonly stack?: string;
 };
 
 /** Log Message mapping layer, common use-case is sensitive data sanitization */
 export type LogTranslator<U = unknown> = {
   readonly map: (data: LogMessage, info?: U) => LogMessage;
+};
+
+export interface LogMethod {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (message: string, ...args: any[]): void;
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (context: LogContext, message: string, ...args: any[]): void;
+}
+
+/** Key-Value info to sent in each log entry, e.g. 'userAgent', 'hostname', 'userId' etc. */
+export type LogMeta = Record<string, unknown>;
+
+/**
+ * Not Opinionated ts Logger with:
+ * - appId (distinguish log between multiple instances)
+ * - tags support (tag child loggers, find and filter certain logs super-fast)
+ * - multiple channels output (you could add your own one: e.g. for parallel monitoring; @see `LoggerOptions`)
+ * - sensitive fields sanitization (perf optimized, customizable: @see `LogContext`)
+ * - stack output of any call (configurable: @see `LogContext`)
+ */
+export interface Logger {
+  readonly appId: string;
+  readonly error: LogMethod;
+  readonly warn: LogMethod;
+  readonly info: LogMethod;
+  readonly debug: LogMethod;
+  readonly channels: LogOutputRegistry;
+  readonly tags: readonly LogTag[];
+  /**
+   * Creates Child logger with added tags.
+   * Note: AppId and Channels are reused and remain same.
+   */
+  readonly tagged: (...tags: readonly LogTag[]) => Logger;
+}
+
+export type LoggerConfig = {
+  /** Application Id - to distinguish loggers of multiple instances of your Apps or services */
+  readonly appId?: string;
+  /** Stream your log simultaneously into multiple output channels */
+  readonly channels?: readonly LogOutputChannel[];
+  /** Tag your logger, so it would be easily to filter logs */
+  readonly tags?: readonly LogTag[];
+  /** Metadata to sent in each entry, e.g. 'userAgent', 'hostname' etc. */
+  readonly metadata?: LogMeta;
+  /** Implement your custom transformation of your log data before write, e.g sanitize */
+  readonly translator?: LogTranslator;
+  /** Show Error payload stack for level not less than specified. LogLevel.Error by default */
+  readonly errorPayloadStackLevel?: LogLevel;
 };

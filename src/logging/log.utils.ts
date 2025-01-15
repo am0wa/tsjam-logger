@@ -5,12 +5,23 @@ const isObject = (item: unknown): item is Record<string, unknown> => {
 };
 
 /** Log Utils */
-export namespace logs {
+export namespace Logs {
   export const tagsLine = (tags: readonly string[] | undefined): string => {
     return tags?.length ? `[${tags.map((tag) => `#${tag}`).join()}]` : '';
   };
 
   export const commonSensitiveFields = ['password', 'token', 'secret', 'sessionId'];
+
+  export const stringifyError = (error: Error, numStackLines: number | undefined): string => {
+    if (numStackLines === 0) {
+      return `${error.name}: ${error.message}`;
+    }
+
+    const stack: string = error.stack ?? '';
+    const out: readonly string[] = stack.split('\n').filter((line) => !line.includes('logger.')); // remove logger related lines
+
+    return `${out.slice(0, numStackLines ?? out.length).join('\n')}`;
+  };
 
   /**
    * Sanitizes sensitive Data.
