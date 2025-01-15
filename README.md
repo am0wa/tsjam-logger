@@ -15,13 +15,14 @@ Not opinionated ts Logger with multiple output channels 🍰
 - **appId** (distinguish log between multiple app instances)
 - **timestamps** (milliseconds matter)
 - **hashtags** (tag child loggers, find and filter certain logs super-fast)
-- **multiple channels** output (add ur own output: e.g. parallel remote monitoring)
+- **multiple channels** output (add ur own output: e.g. parallel console output & remote monitoring)
+- **metadata** (add any info to all log entries per appId e.g. `{ userId: 007 }`)
 - **buffering** (useful for crash reporting)
 - **sanitization** of sensitive fields (perf optimized, `{ sanitize: ['sessionId'] }`)
 - **stack output** of any call (configurable,`{ withStack: true }`)
 - **fully customizable** (use your own format)
 - **fair Errors serialization** into string (check `JSON.stringify(new Error('Oops')); // {}`)
-- **strigify** payload at any moment (`{ stringify: true }`)
+- **stringify** payload at any moment (`{ stringify: true }`)
 - **zero third-party dependencies**
 
 **Output example:**  
@@ -55,7 +56,7 @@ logger.info('Greetings for', { name: 'Bob' });
 single usage
 
 ```typescript
-jamLogger.info({ tags: ['#user', '#vip'] }, 'Greetings for', { name: 'John' });
+jamLogger.info({ tags: ['user', 'vip'] }, 'Greetings for', { name: 'John' });
 // [app161125][2024-01-21T18:33:02.981Z][info][#user,#vip] Greetings for { name: 'John' }
 ```
 
@@ -87,6 +88,8 @@ jamLogger.warn({ withStack: false }, 'Oops!', new Error('Something went wrong'))
 // [app170723][2024-02-06T17:02:00.108Z][warn] Oops  Error: Something went wrong
 ```
 
+**Note:** it could be set as default per instance in createLogger
+
 Show stack for any call
 
 ```typescript
@@ -106,8 +109,8 @@ jamLogger.warn({ withStack: true }, 'Oops! Spoiled the milk!');
 ```typescript
 export const logger = createLogger({
   appId: `ioApp${Date.now()}`,
-  channels: [...Logger.getDefaultChannels() /* { out: MyOutput } */], // default output channel is ConsoleOutput
-  translator: Logger.jsonStringifyTranslator, // JSON.stringify All log data arguments
+  channels: [...defaultOutputChannels /* { out: MyOutput } */], // default output channel is ConsoleOutput
+  translator: jsonStringifyTranslator, // JSON.stringify All log data arguments
 });
 export const aiLogger = logger.taggeg('ai'); // child logger with #ai tag
 ```
@@ -123,6 +126,10 @@ const myOutput: LogOutput = {
     // do something with log payload
   },
 };
+//...
+export const logger = createLogger({
+  channels: [...defaultOutputChannels, { out: myOutput }, { out: myKibanaOutput }],
+});
 ```
 
 ### Buffering
@@ -133,20 +140,34 @@ Do not forget to `flush` after report is sent.
 ```typescript
 export const logBuffer = new BufferOutput(2000);
 export const logger = createLogger({
-  channels: [...Logger.getDefaultChannels(), { out: logBuffer }],
+  channels: [...defaultOutputChannels, { out: logBuffer }],
 });
+```
+
+### Metadata
+
+Metadata is especially useful for remote reporting & monitoring.
+
+```typescript
+import { createLogger, JamLogger } from '@tsjam/logger';
+//...
+export const logger = createLogger({
+   metadata: { userId: 007 }, // use it however U wish in ur output channel next to log entry
+});
+//...
+JamLogger.updateMeta(logger.appId, { userId: 546 }); // update metadata
 ```
 
 ### Translators
 
 There are some built-in translators for log data u could use while baking ur own logger:
 
-- `Logger.jsonStringifyTranslator` – `stringify` log data (used on `{ stringify: true }` in context)
-- `Logger.stringifyErrorStackTranslator` – fairly serialize Error into string (used on Errors payload)
-- `Logger.sanitizeSensitiveTranslator` - sanitize any sensitive fields  
+- `jsonStringifyTranslator` – `stringify` log data (used on `{ stringify: true }` in context)
+- `stringifyErrorStackTranslator` – fairly serialize Error into string (used on Errors payload)
+- `sanitizeSensitiveTranslator` - sanitize any sensitive fields  
    (used on `{ sanitize: ['password'] }` in context) defaults: `['password', 'token', 'secret', 'sessionId']`
 
-**Note:** U could apply these translators to a Single log call or to All logs as defaults.
+**Note:** These translators applied either to a Single log call or to All logs by default, U could add Ur own too.
 
 ---
 

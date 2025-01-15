@@ -55,7 +55,6 @@ export type LogOutputChannel = {
 export type LogMessage = {
   readonly message: string;
   readonly optionalParams: readonly unknown[];
-  readonly stack?: string;
 };
 
 /** Log Message mapping layer, common use-case is sensitive data sanitization */
@@ -72,7 +71,7 @@ export interface LogMethod {
 }
 
 /** Key-Value info to sent in each log entry, e.g. 'userAgent', 'hostname', 'userId' etc. */
-export type LogMeta = Record<string, unknown>;
+export type LogMeta = Readonly<Record<string, unknown>>;
 
 /**
  * Not Opinionated ts Logger with:
@@ -104,7 +103,7 @@ export type LoggerConfig = {
   readonly channels?: readonly LogOutputChannel[];
   /** Tag your logger, so it would be easily to filter logs */
   readonly tags?: readonly LogTag[];
-  /** Metadata to sent in each entry, e.g. 'userAgent', 'hostname' etc. */
+  /** Any Metadata per appId to be sent with each log entry, e.g. 'userAgent', 'hostname' etc. */
   readonly metadata?: LogMeta;
   /** Implement your custom transformation of your log data before write, e.g sanitize */
   readonly translator?: LogTranslator;

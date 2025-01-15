@@ -2,9 +2,7 @@ import { ConsoleOutput } from './console.output';
 import { LogLevel, LogLevels } from './level.enum';
 import { Logs } from './log.utils';
 import { LogOutputRegistry } from './output.registry';
-import { jsonStringifyTranslator } from './translators/json-stringify.translator';
-import { sanitizeSensitiveTranslator } from './translators/sanitize-sensitive.translator';
-import { stringifyErrorStackTranslator } from './translators/stringify-error.translator';
+import { jsonStringifyTranslator, sanitizeSensitiveTranslator, stringifyErrorStackTranslator } from './translators';
 import {
   LogContext,
   LogEntry,
@@ -43,15 +41,25 @@ export const createLogger = (config?: LoggerConfig): Logger => {
 };
 
 export class JamLogger implements Logger {
-  static readonly defaultInstance = JamLogger.create();
-
   /** Logger with same config would be created only once and shared across the app */
-  private static instances = new WeakMap<LoggerConfig, Logger>();
+  static readonly instancesMap = new WeakMap<LoggerConfig, Logger>();
 
   static create(config: LoggerConfig = {}): Logger {
-    const instance = JamLogger.instances.get(config) ?? new JamLogger({ ...config });
-    JamLogger.instances.set(config, instance);
+    let instance = JamLogger.instancesMap.get(config);
+    if (!instance) {
+      instance = new JamLogger({ ...config });
+      JamLogger.instancesMap.set(config, instance);
+    }
     return instance;
+  }
+
+  private static metaMap = new Map<string, LogMeta>();
+
+  static updateMeta(appId: string, meta: LogMeta): LogMeta {
+    const oldMeta = JamLogger.metaMap.get(appId) ?? {};
+    const newMeta = { ...oldMeta, ...meta };
+    JamLogger.metaMap.set(appId, newMeta);
+    return newMeta;
   }
 
   readonly appId: string;
@@ -59,8 +67,6 @@ export class JamLogger implements Logger {
   readonly channels: LogOutputRegistry;
   readonly errorPayloadStackLevel: LogLevel;
   readonly translator: LogTranslator;
-
-  metadata: LogMeta;
 
   protected constructor({
     appId = generateAppId(),
@@ -75,31 +81,35 @@ export class JamLogger implements Logger {
     this.channels = new LogOutputRegistry(channels);
     this.errorPayloadStackLevel = errorPayloadStackLevel;
     this.translator = translator;
-    this.metadata = metadata;
+    JamLogger.updateMeta(appId, metadata);
   }
 
-  readonly error: LogMethod = (...args) => this.logMessage(LogLevel.Error, this.metadata, this.tags, ...args);
-  readonly warn: LogMethod = (...args) => this.logMessage(LogLevel.Warn, this.metadata, this.tags, ...args);
-  readonly info: LogMethod = (...args) => this.logMessage(LogLevel.Info, this.metadata, this.tags, ...args);
-  readonly debug: LogMethod = (...args) => this.logMessage(LogLevel.Debug, this.metadata, this.tags, ...args);
+  get metadata(): LogMeta {
+    return JamLogger.metaMap.get(this.appId) ?? {};
+  }
 
-  tagged(tags: LogTag): Logger {
-    const nextTags = [...new Set([...this.tags, ...tags])].sort();
+  readonly error: LogMethod = (...args) => this.logMessage(LogLevel.Error, this.tags, ...args);
+  readonly warn: LogMethod = (...args) => this.logMessage(LogLevel.Warn, this.tags, ...args);
+  readonly info: LogMethod = (...args) => this.logMessage(LogLevel.Info, this.tags, ...args);
+  readonly debug: LogMethod = (...args) => this.logMessage(LogLevel.Debug, this.tags, ...args);
 
-    const meta = { ...this.metadata };
+  tagged(...tags: LogTag[]): Logger {
+    const nextTags = [...new Set([...this.tags, ...tags])].sort(); // unique and sorted
+
     return {
-      ...this,
-      metadata: { ...this.metadata },
-      error: (...args) => this.logMessage(LogLevel.Error, meta, nextTags, ...args),
-      warn: (...args) => this.logMessage(LogLevel.Warn, meta, nextTags, ...args),
-      info: (...args) => this.logMessage(LogLevel.Info, meta, nextTags, ...args),
-      debug: (...args) => this.logMessage(LogLevel.Debug, meta, nextTags, ...args),
+      appId: this.appId,
+      channels: this.channels,
+      tagged: this.tagged.bind(this, ...nextTags), // preserve the ability to chain
+      error: (...args) => this.logMessage(LogLevel.Error, nextTags, ...args),
+      warn: (...args) => this.logMessage(LogLevel.Warn, nextTags, ...args),
+      info: (...args) => this.logMessage(LogLevel.Info, nextTags, ...args),
+      debug: (...args) => this.logMessage(LogLevel.Debug, nextTags, ...args),
       tags: nextTags,
     };
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  logMessage(level: LogLevel, meta: LogMeta, tags: readonly LogTag[], ...args: any[]): void {
+  logMessage(level: LogLevel, tags: readonly LogTag[], ...args: any[]): void {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const argsContext: LogContext =
       typeof args[0] === 'string'
@@ -140,8 +150,8 @@ export class JamLogger implements Logger {
     this.write({
       appId: this.appId,
       date: new Date(),
+      meta: this.metadata,
       level,
-      meta,
       context,
       message: logMessage.message,
       data: logMessage.optionalParams,
@@ -165,9 +175,9 @@ export class JamLogger implements Logger {
  * - stacks for Error log Level
  * - auto-generated appId
  * - tags support
- * - fields sanitization by demand. (e.g. `jamLogger.info({ sanitize: ['sessionId'] }, 'Wow', someData)`)
+ * - fields sanitization by demand. (e.g. `jamLogger.info({ sanitize: ['sessionId', 'password'] }, 'Wow', someData)`)
  *
  * log example:
  *  `[app1611253982848][2021-01-21T18:33:02.981Z][debug][#client] Logged In, { username: Bob, password: '***' }`
  */
-export const jamLogger = JamLogger.defaultInstance;
+export const jamLogger = JamLogger.create();
