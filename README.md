@@ -40,7 +40,7 @@ npm install @tsjam/logger
 ## Usage <small>(Out of Box)</small>
 
 `ConsoleOutput` is the default output channel.  
-U could override it with Ur own ones...
+Override it with Ur own ones...
 
 ```typescript
 import { jamLogger } from '@tsjam/logger';
@@ -51,7 +51,7 @@ jamLogger.info('Hello Logger!');
 
 ### Tagged Logger
 
-U can tag child loggers to easily filter logs by tags.
+Tag child loggers to easily filter logs by tags.
 
 ```typescript
 const logger = jamLogger.tagged('user'); // child logger with added tags
@@ -59,16 +59,7 @@ logger.info('Greetings for', { name: 'Bob' });
 // [app161125][2024-01-21T18:33:02.981Z][info][#user] Greetings for { name: 'Bob' }
 ```
 
-### Sensitive Fields Sanitization
-
-```typescript
-jamLogger.debug({ sanitize: ['password'] }, 'Logged in', { name: 'Bob', password: 'ABC' });
-// [app170723][2024-02-06T16:47:56.398Z][debug] Logged in  { name: 'Bob', password: '***' }
-```
-
-**Note:** U could pass `sanitizeSensitiveTranslator` in createLogger to always sanitize sensitive fields by default. Yet it's more perf optimized to sanitize only when needed.
-
-## Usage <small>(bake ur Own Logger)</small>
+## Usage <small>(bake Ur own logger)</small>
 
 ```typescript
 export const logger = JamLogger.create({
@@ -118,7 +109,16 @@ export const logger = JamLogger.create({
 JamLogger.updateMeta(logger.appId, { userId: 546 }); // update metadata
 ```
 
-## Usage <small>(with LogContext Per single Call)</small>
+## Usage <small>(LogContext per single call)</small>
+
+### Sensitive Fields Sanitization
+
+```typescript
+jamLogger.debug({ sanitize: ['password'] }, 'Logged in', { name: 'Bob', password: 'ABC' });
+// [app170723][2024-02-06T16:47:56.398Z][debug] Logged in  { name: 'Bob', password: '***' }
+```
+
+**Note:** U could pass `sanitizeSensitiveTranslator` in createLogger to always sanitize sensitive fields by default. Yet it's more perf optimized to sanitize only when needed.
 
 ### Stack Visibility (show / hide / trim)
 
