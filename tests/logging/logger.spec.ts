@@ -1,4 +1,4 @@
-import { createLogger, JamLogger, jamLogger } from 'logging';
+import { JamLogger, jamLogger } from 'logging';
 
 describe('logger', () => {
   xit('should use cache if same child logger exists', () => {
@@ -16,7 +16,7 @@ describe('logger', () => {
     expect(first === second).toBe(true);
   });
   it('should reuse tags of parent', () => {
-    const first = createLogger({ tags: ['root'] });
+    const first = JamLogger.create({ tags: ['root'] });
     // first.debug('First Hi');
 
     const second = first.tagged('child');

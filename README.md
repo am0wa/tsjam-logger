@@ -71,7 +71,7 @@ jamLogger.debug({ sanitize: ['password'] }, 'Logged in', { name: 'Bob', password
 
 #### Stack Visibility (show / hide / trim)
 
-Shown on Error payloads (same like Console.log);
+Shown on Error payloads (same like console.log);
 
 ```typescript
 jamLogger.warn('Oops!', new Error('Something went wrong'));
@@ -81,16 +81,23 @@ jamLogger.warn('Oops!', new Error('Something went wrong'));
 //    ...
 ```
 
-Hide stack
+Hide stack on Error payloads for specified levels
+
+```typescript
+const logger = JamLogger.create({ errorPayloadStackLevel: LogLevel.Error });
+//...
+jamLogger.warn({ withStack: false }, 'Oops!', new Error('Something went wrong'));
+// [app170723][2024-02-06T17:02:00.108Z][warn] Oops  Error: Something went wrong
+```
+
+Hide stack for single call
 
 ```typescript
 jamLogger.warn({ withStack: false }, 'Oops!', new Error('Something went wrong'));
 // [app170723][2024-02-06T17:02:00.108Z][warn] Oops  Error: Something went wrong
 ```
 
-**Note:** it could be set as default per instance in createLogger
-
-Show stack for any call
+Show stack for single call (even without Error)
 
 ```typescript
 jamLogger.warn({ withStack: true }, 'Oops! Spoiled the milk!');
@@ -100,23 +107,22 @@ jamLogger.warn({ withStack: true }, 'Oops! Spoiled the milk!');
 //   ...
 ```
 
-**Note:** it's also possible to just trim the stack to a certain depth via `trimStack`
+**Note:** it's also possible to trim the stack to specified depth via `trimStack`
 
 ---
 
 ## Usage <small>(bake ur Own Logger)</small>
 
 ```typescript
-export const logger = createLogger({
+export const logger = JamLogger.create({
   appId: `ioApp${Date.now()}`,
-  channels: [...defaultOutputChannels /* { out: MyOutput } */], // default output channel is ConsoleOutput
-  translator: jsonStringifyTranslator, // JSON.stringify All log data arguments
+  channels: [...defaultOutputChannels /* { out: MyKibanaOutput } */], // default output channel is ConsoleOutput
 });
 export const aiLogger = logger.taggeg('ai'); // child logger with #ai tag
 ```
 
-**Note:** if U want to use ur own Output Channel or to Customize output format,
-to get raw (not stringified) payload do not set translator.
+**Note:** U could add custom translator if U need one for all channels transformation.
+Otherwise, it's recommended to process raw logEntry in Ur particular output channel.
 
 ### Custom Output Channel
 
@@ -127,7 +133,7 @@ const myOutput: LogOutput = {
   },
 };
 //...
-export const logger = createLogger({
+export const logger = JamLogger.create({
   channels: [...defaultOutputChannels, { out: myOutput }, { out: myKibanaOutput }],
 });
 ```
@@ -139,7 +145,7 @@ Do not forget to `flush` after report is sent.
 
 ```typescript
 export const logBuffer = new BufferOutput(2000);
-export const logger = createLogger({
+export const logger = JamLogger.create({
   channels: [...defaultOutputChannels, { out: logBuffer }],
 });
 ```
@@ -149,9 +155,9 @@ export const logger = createLogger({
 Metadata is especially useful for remote reporting & monitoring.
 
 ```typescript
-import { createLogger, JamLogger } from '@tsjam/logger';
+import { JamLogger } from '@tsjam/logger';
 //...
-export const logger = createLogger({
+export const logger = JamLogger.create({
    metadata: { userId: 007 }, // use it however U wish in ur output channel next to log entry
 });
 //...
