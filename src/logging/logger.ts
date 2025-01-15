@@ -127,7 +127,8 @@ export class JamLogger implements Logger {
     let logMessage: LogMessage = { message, optionalParams: args };
 
     if (context.sanitize) {
-      logMessage = sanitizeSensitiveTranslator.map(logMessage, context.sanitize);
+      const sensitiveFields = Array.isArray(context.sanitize) ? context.sanitize : Logs.commonSensitiveFields;
+      logMessage = sanitizeSensitiveTranslator.map(logMessage, sensitiveFields);
     }
 
     const hasErrorPayload = logMessage.optionalParams.some((one) => one instanceof Error);

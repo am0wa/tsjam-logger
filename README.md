@@ -39,8 +39,7 @@ npm install @tsjam/logger
 
 ## Usage <small>(Out of Box)</small>
 
-`ConsoleOutput` is the default output channel.  
-Override it with Ur own ones...
+`ConsoleOutput` is the default output channel. Specify Ur own ones if needed...
 
 ```typescript
 import { jamLogger } from '@tsjam/logger';
@@ -55,6 +54,7 @@ Tag child loggers to easily filter logs by tags.
 
 ```typescript
 const logger = jamLogger.tagged('user'); // child logger with added tags
+
 logger.info('Greetings for', { name: 'Bob' });
 // [app161125][2024-01-21T18:33:02.981Z][info][#user] Greetings for { name: 'Bob' }
 ```
@@ -62,11 +62,11 @@ logger.info('Greetings for', { name: 'Bob' });
 ## Usage <small>(bake Ur own logger)</small>
 
 ```typescript
-export const logger = JamLogger.create({
+const logger = JamLogger.create({
   appId: `ioApp${Date.now()}`,
   channels: [...defaultOutputChannels /* { out: MyKibanaOutput } */], // default output channel is ConsoleOutput
 });
-export const aiLogger = logger.taggeg('ai'); // child logger with #ai tag
+const aiLogger = logger.taggeg('ai'); // child logger with #ai tag
 ```
 
 ### Custom Output Channel
@@ -77,8 +77,8 @@ const myOutput: LogOutput = {
     // Format raw log entry and send it anywhere U wish
   },
 };
-//...
-export const logger = JamLogger.create({
+
+const logger = JamLogger.create({
   channels: [...defaultOutputChannels, { out: myOutput }, { out: myKibanaOutput }],
 });
 ```
@@ -89,8 +89,8 @@ Use simplistic `BufferOutput` to buffer logs for any crash reporting or remote m
 Do not forget to `flush` after report is sent.
 
 ```typescript
-export const logBuffer = new BufferOutput(2000);
-export const logger = JamLogger.create({
+const logBuffer = new BufferOutput(2000);
+const logger = JamLogger.create({
   channels: [...defaultOutputChannels, { out: logBuffer }],
 });
 ```
@@ -101,8 +101,8 @@ Metadata is especially useful for remote reporting & monitoring.
 
 ```typescript
 import { JamLogger } from '@tsjam/logger';
-//...
-export const logger = JamLogger.create({
+
+const logger = JamLogger.create({
    metadata: { userId: 007 }, // use it however U wish in ur output channel next to log entry
 });
 //...
@@ -118,7 +118,8 @@ jamLogger.debug({ sanitize: ['password'] }, 'Logged in', { name: 'Bob', password
 // [app170723][2024-02-06T16:47:56.398Z][debug] Logged in  { name: 'Bob', password: '***' }
 ```
 
-**Note:** U could pass `sanitizeSensitiveTranslator` in createLogger to always sanitize sensitive fields by default. Yet it's more perf optimized to sanitize only when needed.
+**Note:** to always sanitize sensitive fields use `sanitizeSensitiveTranslator` config option.  
+Yet it's more perf optimized to sanitize only when needed.
 
 ### Stack Visibility (show / hide / trim)
 
@@ -136,7 +137,7 @@ Hide stack on Error payloads for specified levels
 
 ```typescript
 const logger = JamLogger.create({ errorPayloadStackLevel: LogLevel.Error });
-//...
+
 logger.warn('Oops!', new Error('Something went wrong'));
 // [app170723][2024-02-06T17:02:00.108Z][warn] Oops  Error: Something went wrong
 ```
@@ -166,10 +167,10 @@ jamLogger.warn({ withStack: true }, 'Oops! Spoiled the milk!');
 
 There are some built-in translators for log data u could use while baking ur own logger:
 
-- `jsonStringifyTranslator` – `stringify` log data (used on `{ stringify: true }` in context)
+- `jsonStringifyTranslator` – `stringify` log data `{ stringify: true }`
 - `stringifyErrorStackTranslator` – fairly serialize Error into string (used on Errors payload)
-- `sanitizeSensitiveTranslator` - sanitize any sensitive fields  
-   (used on `{ sanitize: ['password'] }` in context) defaults: `['password', 'token', 'secret', 'sessionId']`
+- `sanitizeSensitiveTranslator` - sanitize any sensitive fields `{ sanitize: ['token'] }` or  
+  `{ sanitize: true }` defaults: `['password', 'token', 'secret', 'sessionId']`
 
 **Note:** These translators applied either to a Single log call or to All logs by default, U could add Ur own too.
 

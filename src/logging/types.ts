@@ -22,7 +22,7 @@ export interface LogContext {
    * Trims Errors payload stack to number of lines.
    */
   readonly trimStack?: number;
-  readonly sanitize?: readonly string[];
+  readonly sanitize?: boolean | readonly string[];
   readonly stringify?: boolean;
 }
 

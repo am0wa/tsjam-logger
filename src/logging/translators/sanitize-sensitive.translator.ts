@@ -6,7 +6,7 @@ import { LogMessage, LogTranslator } from '../types';
  * For performance optimization – it's good to sanitize data ONLY in places when it's actually needed.
  */
 export const sanitizeSensitiveTranslator: LogTranslator<readonly string[]> = {
-  map({ message, optionalParams }: LogMessage, sensitive = Logs.commonSensitiveFields): LogMessage {
+  map({ message, optionalParams }: LogMessage, sensitive): LogMessage {
     return { message, optionalParams: Logs.sanitizeSensitiveData(optionalParams, true, sensitive) };
   },
 };
