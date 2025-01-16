@@ -17,13 +17,13 @@ Useful for parallel console output & remote monitoring 👩‍🚀
 - **timestamps** (milliseconds matter)
 - **hashtags** (tag child loggers, find and filter certain logs super-fast)
 - **multiple channels** output (add ur own output: e.g. parallel console output & remote monitoring)
-- **metadata** (add any info to all log entries per appId e.g. `{ userId: 007 }`)
+- **metadata** (for all log entries per appId or per call e.g. `{ userId: 007 }`)
 - **buffering** (useful for crash reporting)
-- **sanitization** of sensitive fields (perf optimized, `Logs.sanitize({ password: 'ABC' })`)
 - **fully customizable** (use your own log format)
 - **fair Errors serialization** into string (check `JSON.stringify(new Error('Oops')); // {}`)
-- **stringify** payload at any moment (`Logs.stringify(data)`)
-- **stack output** of any call (configurable,`{ withStack: true }`)
+- **sanitization** of sensitive fields (perf optimized, `Logs.sanitize({ password: 'ABC' })`)
+- **safe stringify** payload at any moment (`Logs.stringify(data)`)
+- **trim stack** to number of lines or fully cut (configurable,`{ trimStack: 3 }`)
 - **zero third-party dependencies**
 
 **Output example:**  
@@ -107,6 +107,17 @@ const logger = JamLogger.create({
 });
 //...
 JamLogger.updateMeta(logger.appId, { userId: 546 }); // update metadata
+```
+
+Pass additional meta per call.
+
+```typescript
+const logger = JamLogger.create({
+  metadata: { userId: 007 }, // use it however U wish in ur output channel next to log entry
+});
+logger.info('Whats Up?', LogMeta.bake({ drink: 'dry martini' }));
+// [app170723][2025-01-16T16:47:56.398Z][debug] Whats Up?
+// meta: { "userId": "007", "drink": "'dry martini' }"
 ```
 
 ## Usage <small>(LogContext per single call)</small>
