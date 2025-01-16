@@ -16,7 +16,7 @@ export type LogEntry = {
   readonly data?: readonly unknown[];
   readonly stack?: string;
   readonly tags?: readonly LogTag[];
-  readonly meta?: LogMeta;
+  readonly meta: LogMeta;
 };
 
 /**

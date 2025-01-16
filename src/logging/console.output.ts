@@ -1,4 +1,5 @@
 import { LogLevel } from './level.enum';
+import { LogMeta } from './log.meta';
 import { Logs } from './log.utils';
 import { LogEntry, LogOutput } from './types';
 
@@ -21,7 +22,7 @@ export class ConsoleOutput implements LogOutput {
       return; // silent mode
     }
     const restData = entry.data ?? [];
-    const meta = this.showMeta ? `\nmeta: ${Logs.stringify(entry.meta)}` : '';
+    const meta = !this.showMeta || LogMeta.isEmpty(entry.meta) ? '' : `\nmeta: ${Logs.stringify(entry.meta)}`;
     this.logMethods[entry.level](ConsoleOutput.formatMessage(entry), ...restData, meta);
   }
 }

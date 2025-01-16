@@ -50,4 +50,12 @@ describe('logger', () => {
     expect(actual?.data).toEqual([{ payload: 'Coffee' }, { payload: 'Beer' }]);
     expect(actual?.tags).toEqual(['ai']);
   });
+  it('trim stack', () => {
+    let actual: LogEntry | undefined;
+    const testOut: LogOutput = { write: (entry) => (actual = entry) };
+    const logger = JamLogger.create({ channels: [{ out: testOut }], trimStack: 1 });
+
+    logger.warn('Oops!', new Error('Spoiled the milk!'));
+    expect(actual?.data).toEqual(['Error: Spoiled the milk!']);
+  });
 });

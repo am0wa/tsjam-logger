@@ -159,7 +159,7 @@ Trim stack to few lines
 
 ```typescript
 const logger = JamLogger.create({ trimStack: 2 });
-logger.warn({ withStack: true }, 'Oops! Spoiled the milk!');
+logger.warn('Oops!', new Error('Spoiled the milk!'));
 // [app170723][2024-02-06T17:13:59.496Z][warn] Oops! Spoiled the milk! Stack:
 //   at Object.<anonymous> (...tsjam-logger/tests/logging/log.utils.spec.ts:10:15)
 //   at Promise.then.completed (...tsjam-logger/node_modules/jest-circus/build/utils.js:298:28)

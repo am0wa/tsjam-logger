@@ -12,10 +12,18 @@ export namespace LogMeta {
     return LogMeta.SYM in data;
   };
 
+  export const isEmpty = (meta: LogMeta): boolean => {
+    return meta === LogMeta.EMPTY;
+  };
+
   /** Transforms metadata into signed metadata, which is easy to track */
   export const bake = (data: object): LogMeta => {
-    if (data == null || data === EMPTY) {
+    if (data === EMPTY || data == null || Object.keys(data).length === 0) {
       return EMPTY;
+    }
+    if (LogMeta.SYM in data) {
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+      return data as LogMeta;
     }
 
     Object.defineProperty(data, LogMeta.SYM, { enumerable: false, configurable: false, value: true });

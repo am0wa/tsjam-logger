@@ -56,7 +56,8 @@ export class JamLogger implements Logger {
     tags = [],
     metadata = LogMeta.EMPTY,
     translator = emptyTranslator,
-    errorStackLevel = LogLevel.Error,
+    errorStackLevel = LogLevel.Warn,
+    trimStack,
   }: LoggerConfig) {
     this.appId = appId;
     this.tags = [...tags].sort();
@@ -64,6 +65,7 @@ export class JamLogger implements Logger {
     this.translator = translator;
     this.stackConfig = {
       errorStackLevel: errorStackLevel,
+      trimStack,
     };
     JamLogger.updateMeta(appId, metadata);
   }
@@ -127,7 +129,7 @@ export class JamLogger implements Logger {
       tags: argsMeta.tags?.length ? tags.concat(argsMeta.tags) : tags,
       message: logMessage.message,
       data: logMessage.optionalParams,
-      meta: argsMeta === LogMeta.EMPTY ? this.metadata : LogMeta.bake({ ...this.metadata, ...argsMeta }),
+      meta: LogMeta.isEmpty(argsMeta) ? this.metadata : { ...this.metadata, ...argsMeta },
     });
   }
 
