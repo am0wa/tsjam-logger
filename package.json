@@ -18,6 +18,7 @@
     "lint": "eslint src",
     "test": "jest --config jest.config.js",
     "doc:html": "typedoc src/ --exclude **/*.spec.ts --out docs",
+    "doc:publish": "gh-pages -m \"[ci skip] Updates\" -d docs",
     "patch-version": "npm version patch",
     "prepublishOnly": "npm run clean && npm run build && npm run test",
     "postpublish": "git push --tags origin",
@@ -32,6 +33,7 @@
     "@tsjam/eslint-config-recommended": "^0.2.1",
     "@tsjam/jest-config-recommended": "^0.2.1",
     "@tsjam/web-config-base": "^0.2.0",
+    "gh-pages": "^6.3.0",
     "typedoc": "^0.27.6",
     "typescript": "^5.7.2"
   },
