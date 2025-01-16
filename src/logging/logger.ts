@@ -1,6 +1,7 @@
 import { ConsoleOutput } from './console.output';
 import { LogLevel, LogLevels } from './level.enum';
 import { LogMeta } from './log.meta';
+import { Logs } from './log.utils';
 import { LogOutputRegistry } from './output.registry';
 import { stringifyErrorStackTranslator } from './translators';
 import {
@@ -19,7 +20,6 @@ const emptyTranslator: LogTranslator = {
   map: (logMessage: LogMessage) => logMessage,
 };
 
-export const generateAppId = (): string => `app${Date.now()}`;
 export const defaultOutputChannels: readonly LogOutputChannel[] = [{ out: new ConsoleOutput() }];
 
 export class JamLogger implements Logger {
@@ -51,7 +51,7 @@ export class JamLogger implements Logger {
   readonly stackConfig: StackConfig;
 
   protected constructor({
-    appId = generateAppId(),
+    appId = Logs.generateAppId(),
     channels = defaultOutputChannels,
     tags = [],
     metadata = LogMeta.EMPTY,

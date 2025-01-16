@@ -17,6 +17,7 @@
     "clean": "rimraf lib",
     "lint": "eslint src",
     "test": "jest --config jest.config.js",
+    "doc:html": "typedoc src/ --exclude **/*.spec.ts --out docs",
     "patch-version": "npm version patch",
     "prepublishOnly": "npm run clean && npm run build && npm run test",
     "postpublish": "git push --tags origin",
@@ -31,6 +32,7 @@
     "@tsjam/eslint-config-recommended": "^0.2.1",
     "@tsjam/jest-config-recommended": "^0.2.1",
     "@tsjam/web-config-base": "^0.2.0",
+    "typedoc": "^0.27.6",
     "typescript": "^5.7.2"
   },
   "prettier": "@tsjam/web-config-base/prettier.config.js",

@@ -1,15 +1,18 @@
-import { LogMeta } from './log.meta';
-
 const isObject = (item: unknown): item is Record<string, unknown> => {
   return item !== null && typeof item === 'object';
 };
 
 /** Log Utils */
 export namespace Logs {
+  /** @return simple Date based appId e.g. `'app1737054910132'` */
+  export const generateAppId = (): string => `app${Date.now()}`;
+
+  /** @return Tags line e.g. '[#tag1,#tag2]' */
   export const tagsLine = (tags: readonly string[] | undefined): string => {
     return tags?.length ? `[${tags.map((tag) => `#${tag}`).join()}]` : '';
   };
 
+  /** @return Stringified error. Trims stack to `numStackLines` is specified */
   export const stringifyError = (error: Error, numStackLines: number | undefined): string => {
     if (numStackLines === 0) {
       return `${error.name}: ${error.message}`;
@@ -47,6 +50,9 @@ export namespace Logs {
     }
   };
 
+  /**
+   * @default ['password', 'token', 'secret', 'sessionId']
+   */
   export const commonSensitiveFields = ['password', 'token', 'secret', 'sessionId'];
 
   /**
@@ -80,16 +86,5 @@ export namespace Logs {
 
   export const stringNode = (value: string | undefined): string => {
     return value?.length ? `[${value}]` : '';
-  };
-
-  export const metaLine = (meta: LogMeta | undefined): string => {
-    if (!meta) {
-      return '';
-    }
-    return Object.entries(meta)
-      .map(([key, value]) => {
-        return isObject(value) ? `${key}: ${Logs.stringify(value)}` : `${key}: ${value}`;
-      })
-      .join(',');
   };
 }
