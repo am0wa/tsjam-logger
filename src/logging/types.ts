@@ -1,4 +1,5 @@
 import { LogLevel } from './level.enum';
+import { LogMeta } from './log.meta';
 import { LogOutputRegistry } from './output.registry';
 
 /**
@@ -7,33 +8,14 @@ import { LogOutputRegistry } from './output.registry';
  */
 export type LogTag = string;
 
-/**
- * Context which you could add as a first argument to any of jamLogger methods
- */
-export interface LogContext {
-  readonly [key: string]: unknown;
-  readonly tags?: readonly LogTag[];
-  /**
-   * True for payloads with Error.
-   * Creates synthetic stack for any level if there is no Error payload. Otherwise hides it.
-   */
-  readonly withStack?: boolean;
-  /**
-   * Trims Errors payload stack to number of lines.
-   */
-  readonly trimStack?: number;
-  readonly sanitize?: boolean | readonly string[];
-  readonly stringify?: boolean;
-}
-
 export type LogEntry = {
   readonly appId: string;
   readonly date: Date;
   readonly level: LogLevel;
   readonly message: string;
-  readonly context?: LogContext;
   readonly data?: readonly unknown[];
   readonly stack?: string;
+  readonly tags?: readonly LogTag[];
   readonly meta?: LogMeta;
 };
 
@@ -41,6 +23,7 @@ export type LogEntry = {
  * Implement this API in order to receive log writes into your custom output.
  */
 export interface LogOutput {
+  showMeta?: boolean | undefined;
   write(e: LogEntry): void;
 }
 
@@ -63,15 +46,8 @@ export type LogTranslator<U = unknown> = {
 };
 
 export interface LogMethod {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (message: string, ...args: any[]): void;
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (context: LogContext, message: string, ...args: any[]): void;
+  (message: string, ...args: unknown[]): void;
 }
-
-/** Key-Value info to sent in each log entry, e.g. 'userAgent', 'hostname', 'userId' etc. */
-export type LogMeta = Readonly<Record<string, unknown>>;
 
 /**
  * Not Opinionated ts Logger with:
@@ -96,6 +72,15 @@ export interface Logger {
   readonly tagged: (...tags: readonly LogTag[]) => Logger;
 }
 
+export type StackConfig = {
+  /** Show Error payload stack for level not less than specified. LogLevel.Error by default */
+  readonly errorStackLevel?: LogLevel;
+  /**
+   * Trims Errors payload stack to number of lines.
+   */
+  readonly trimStack?: number;
+};
+
 export type LoggerConfig = {
   /** Application Id - to distinguish loggers of multiple instances of your Apps or services */
   readonly appId?: string;
@@ -104,9 +89,7 @@ export type LoggerConfig = {
   /** Tag your logger, so it would be easily to filter logs */
   readonly tags?: readonly LogTag[];
   /** Any Metadata per appId to be sent with each log entry, e.g. 'userAgent', 'hostname' etc. */
-  readonly metadata?: LogMeta;
-  /** Implement your custom transformation of your log data before write, e.g sanitize */
+  readonly metadata?: Record<string, unknown>;
+  /** Implement your custom transformation of your log data before write, e.g json-stringify.translator */
   readonly translator?: LogTranslator;
-  /** Show Error payload stack for level not less than specified. LogLevel.Error by default */
-  readonly errorPayloadStackLevel?: LogLevel;
-};
+} & StackConfig;

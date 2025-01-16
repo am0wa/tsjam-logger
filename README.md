@@ -19,11 +19,11 @@ Useful for parallel console output & remote monitoring 👩‍🚀
 - **multiple channels** output (add ur own output: e.g. parallel console output & remote monitoring)
 - **metadata** (add any info to all log entries per appId e.g. `{ userId: 007 }`)
 - **buffering** (useful for crash reporting)
-- **sanitization** of sensitive fields (perf optimized, `{ sanitize: ['sessionId'] }`)
-- **stack output** of any call (configurable,`{ withStack: true }`)
-- **fully customizable** (use your own format)
+- **sanitization** of sensitive fields (perf optimized, `Logs.sanitize({ password: 'ABC' })`)
+- **fully customizable** (use your own log format)
 - **fair Errors serialization** into string (check `JSON.stringify(new Error('Oops')); // {}`)
-- **stringify** payload at any moment (`{ stringify: true }`)
+- **stringify** payload at any moment (`Logs.stringify(data)`)
+- **stack output** of any call (configurable,`{ withStack: true }`)
 - **zero third-party dependencies**
 
 **Output example:**  
@@ -114,21 +114,21 @@ JamLogger.updateMeta(logger.appId, { userId: 546 }); // update metadata
 ### Sensitive Fields Sanitization
 
 ```typescript
-jamLogger.debug({ sanitize: ['password'] }, 'Logged in', { name: 'Bob', password: 'ABC' });
+jamLogger.debug('Logged in', Loges.sanitize({ name: 'Bob', password: 'ABC' }));
 // [app170723][2024-02-06T16:47:56.398Z][debug] Logged in  { name: 'Bob', password: '***' }
 ```
 
 **Note:** to always sanitize sensitive fields use `sanitizeSensitiveTranslator` config option.  
 Yet it's more perf optimized to sanitize only when needed.
 
-### Stack Visibility (show / hide / trim)
+### Stack Visibility
 
 Shown on Error payloads (same like console.log);
 
 ```typescript
 jamLogger.warn('Oops!', new Error('Something went wrong'));
 // [app170723][2024-02-06T17:02:00.108Z][warn] Oops  Error: Something went wrong
-//    at Object.<anonymous> (...tsjam-logger/tests/logging/log.util.spec.ts:10:49)
+//    at Object.<anonymous> (...tsjam-logger/tests/logging/log.utils.spec.ts:10:49)
 //    at Promise.then.completed (...tsjam-logger/node_modules/jest-circus/build/utils.js:298:28)
 //    ...
 ```
@@ -136,25 +136,19 @@ jamLogger.warn('Oops!', new Error('Something went wrong'));
 Hide stack on Error payloads for specified levels
 
 ```typescript
-const logger = JamLogger.create({ errorPayloadStackLevel: LogLevel.Error });
+const logger = JamLogger.create({ errorStackLevel: LogLevel.Error });
 
 logger.warn('Oops!', new Error('Something went wrong'));
 // [app170723][2024-02-06T17:02:00.108Z][warn] Oops  Error: Something went wrong
 ```
 
-Hide stack for single call
+Trim stack to few lines
 
 ```typescript
-jamLogger.warn({ withStack: false }, 'Oops!', new Error('Something went wrong'));
-// [app170723][2024-02-06T17:02:00.108Z][warn] Oops  Error: Something went wrong
-```
-
-Show stack for single call (even without Error)
-
-```typescript
-jamLogger.warn({ withStack: true }, 'Oops! Spoiled the milk!');
+const logger = JamLogger.create({ trimStack: 2 });
+logger.warn({ withStack: true }, 'Oops! Spoiled the milk!');
 // [app170723][2024-02-06T17:13:59.496Z][warn] Oops! Spoiled the milk! Stack:
-//   at Object.<anonymous> (...tsjam-logger/tests/logging/log.util.spec.ts:10:15)
+//   at Object.<anonymous> (...tsjam-logger/tests/logging/log.utils.spec.ts:10:15)
 //   at Promise.then.completed (...tsjam-logger/node_modules/jest-circus/build/utils.js:298:28)
 //   ...
 ```
@@ -167,10 +161,10 @@ jamLogger.warn({ withStack: true }, 'Oops! Spoiled the milk!');
 
 There are some built-in translators for log data u could use while baking ur own logger:
 
-- `jsonStringifyTranslator` – `stringify` log data `{ stringify: true }`
+- `jsonStringifyTranslator` – stringify log data `Logs.stringify(data)`
 - `stringifyErrorStackTranslator` – fairly serialize Error into string (used on Errors payload)
-- `sanitizeSensitiveTranslator` - sanitize any sensitive fields `{ sanitize: ['token'] }` or  
-  `{ sanitize: true }` defaults: `['password', 'token', 'secret', 'sessionId']`
+- `sanitizeSensitiveTranslator` - sanitize any sensitive fields
+  defaults: `['password', 'token', 'secret', 'sessionId']`
 
 **Note:** These translators applied either to a Single log call or to All logs by default, U could add Ur own too.
 

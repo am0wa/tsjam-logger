@@ -16,7 +16,7 @@
     "build": "tsc -b src/tsconfig.json",
     "clean": "rimraf lib",
     "lint": "eslint src",
-    "test": "node ./node_modules/jest/bin/jest.js --config jest.config.js",
+    "test": "jest --config jest.config.js",
     "patch-version": "npm version patch",
     "prepublishOnly": "npm run clean && npm run build && npm run test",
     "postpublish": "git push --tags origin",
@@ -29,7 +29,7 @@
   ],
   "devDependencies": {
     "@tsjam/eslint-config-recommended": "^0.2.1",
-    "@tsjam/jest-config-recommended": "^0.1.2",
+    "@tsjam/jest-config-recommended": "^0.2.1",
     "@tsjam/web-config-base": "^0.2.0",
     "typescript": "^5.7.2"
   },

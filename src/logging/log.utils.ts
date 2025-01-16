@@ -1,4 +1,4 @@
-import { LogContext } from './types';
+import { LogMeta } from './log.meta';
 
 const isObject = (item: unknown): item is Record<string, unknown> => {
   return item !== null && typeof item === 'object';
@@ -9,8 +9,6 @@ export namespace Logs {
   export const tagsLine = (tags: readonly string[] | undefined): string => {
     return tags?.length ? `[${tags.map((tag) => `#${tag}`).join()}]` : '';
   };
-
-  export const commonSensitiveFields = ['password', 'token', 'secret', 'sessionId'];
 
   export const stringifyError = (error: Error, numStackLines: number | undefined): string => {
     if (numStackLines === 0) {
@@ -23,21 +21,45 @@ export namespace Logs {
     return `${out.slice(0, numStackLines ?? out.length).join('\n')}`;
   };
 
+  export const createStack = (numStackLines: number | undefined): string => {
+    if (numStackLines === 0) {
+      return '';
+    }
+    return Logs.stringifyError(new Error(), numStackLines).replace('Error:', 'Stack:');
+  };
+
   /**
-   * Sanitizes sensitive Data.
+   * Safe JSON.stringify with proper error instances serialisation.
+   */
+  export const stringify = (
+    data: unknown,
+    replacer?: (number | string)[] | null,
+    space?: string | number,
+  ): string | undefined => {
+    if (data instanceof Error) {
+      return JSON.stringify(Logs.stringifyError(data, undefined), replacer, space);
+    }
+    try {
+      return JSON.stringify(data, replacer, space);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (err) {
+      return undefined;
+    }
+  };
+
+  export const commonSensitiveFields = ['password', 'token', 'secret', 'sessionId'];
+
+  /**
+   * Sanitizes sensitive fields e.g. // { password: '***' }
    * Supports primitives, objects and arrays.
    */
-  export const sanitizeSensitiveData = <T>(
-    data: T,
-    deep = false,
-    sensitiveFields: readonly string[] = commonSensitiveFields,
-  ): T => {
+  export const sanitize = <T>(data: T, deep = false, sensitiveFields: readonly string[] = commonSensitiveFields): T => {
     if (!isObject(data)) {
       return data;
     }
     if (Array.isArray(data)) {
       // eslint-disable-next-line @typescript-eslint/consistent-type-assertions,@typescript-eslint/no-unsafe-return, @typescript-eslint/no-explicit-any
-      return data.map((one) => sanitizeSensitiveData(one, deep, sensitiveFields)) as any;
+      return data.map((one) => sanitize(one, deep, sensitiveFields)) as any;
     }
     const sanitized = { ...data };
     Object.keys(sanitized).forEach((key) => {
@@ -50,7 +72,7 @@ export namespace Logs {
       if (isObject(value)) {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        sanitized[key] = sanitizeSensitiveData(value, deep, sensitiveFields);
+        sanitized[key] = sanitize(value, deep, sensitiveFields);
       }
     });
     return sanitized;
@@ -60,19 +82,14 @@ export namespace Logs {
     return value?.length ? `[${value}]` : '';
   };
 
-  export const contextLine = (context: LogContext | undefined): string => {
-    if (!context) {
+  export const metaLine = (meta: LogMeta | undefined): string => {
+    if (!meta) {
       return '';
     }
-
-    let line = '';
-    Object.keys(context).forEach((key) => {
-      if (key == 'tags') {
-        line += tagsLine(context[key]);
-      } else {
-        line += key !== 'withStack' && key !== 'trimStack' && key !== 'sanitize' ? stringNode(`${context[key]}`) : '';
-      }
-    });
-    return line;
+    return Object.entries(meta)
+      .map(([key, value]) => {
+        return isObject(value) ? `${key}: ${Logs.stringify(value)}` : `${key}: ${value}`;
+      })
+      .join(',');
   };
 }

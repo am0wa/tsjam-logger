@@ -3,20 +3,25 @@ import { Logs } from './log.utils';
 import { LogEntry, LogOutput } from './types';
 
 export class ConsoleOutput implements LogOutput {
-  static formatMessage({ date, appId, level, context, message, stack }: LogEntry): string {
-    return `${Logs.stringNode(appId)}${Logs.stringNode(date.toISOString())}${Logs.stringNode(level)}${Logs.contextLine(context)} ${message} ${stack ?? ''}`;
+  static formatMessage({ date, appId, level, tags, message, stack }: LogEntry): string {
+    return `${Logs.stringNode(appId)}${Logs.stringNode(date.toISOString())}${Logs.stringNode(level)}${Logs.tagsLine(tags)} ${message} ${stack ?? ''}`;
   }
+
+  showMeta = true;
 
   private readonly logMethods = {
     [LogLevel.Debug]: console.debug.bind(console),
     [LogLevel.Info]: console.info.bind(console),
     [LogLevel.Warn]: console.warn.bind(console),
     [LogLevel.Error]: console.error.bind(console),
-    [LogLevel.Silent]: () => {},
   };
 
   write(entry: LogEntry): void {
+    if (entry.level === LogLevel.Silent) {
+      return; // silent mode
+    }
     const restData = entry.data ?? [];
-    this.logMethods[entry.level](ConsoleOutput.formatMessage(entry), ...restData);
+    const meta = this.showMeta ? `\nmeta: ${Logs.stringify(entry.meta)}` : '';
+    this.logMethods[entry.level](ConsoleOutput.formatMessage(entry), ...restData, meta);
   }
 }

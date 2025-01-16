@@ -9,9 +9,7 @@ export const jsonStringifyTranslator: LogTranslator = {
   map: ({ message, optionalParams }) => {
     return {
       message,
-      optionalParams: optionalParams.map((one) =>
-        one instanceof Error ? JSON.stringify(Logs.stringifyError(one, undefined)) : JSON.stringify(one),
-      ),
+      optionalParams: optionalParams.map((one) => Logs.stringify(one)),
     };
   },
 };

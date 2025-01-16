@@ -27,6 +27,7 @@ coverage
 
 # ide
 .idea/*
+.run/*
 *.iml
 .vscode/*
 
