@@ -29,7 +29,7 @@ Useful for parallel console output & remote monitoring 👩‍🚀
 **Output example:**  
 `[app161125][2024-01-21T18:33:02.981Z][info][#user] Logged In: { username: Bob, password: '***' }`
 
-## Installation
+# Installation
 
 ```
 npm install @tsjam/logger
@@ -37,7 +37,9 @@ npm install @tsjam/logger
 
 ---
 
-## Usage <small>(Out of Box)</small>
+# Usage
+
+## Out of Box
 
 `ConsoleOutput` is the default output channel. Specify Ur own ones if needed...
 
@@ -59,7 +61,7 @@ logger.info('Greetings for', { name: 'Bob' });
 // [app161125][2024-01-21T18:33:02.981Z][info][#user] Greetings for { name: 'Bob' }
 ```
 
-## Usage <small>(bake Ur own logger)</small>
+## Bake Own Logger
 
 ```typescript
 const logger = JamLogger.create({
@@ -120,7 +122,7 @@ logger.info('Whats Up?', LogMeta.bake({ drink: 'dry martini' }));
 // meta: { "userId": "007", "drink": "'dry martini' }"
 ```
 
-## Usage <small>(LogContext per single call)</small>
+## Cook per single call
 
 ### Sensitive Fields Sanitization
 
@@ -172,10 +174,9 @@ logger.warn({ withStack: true }, 'Oops! Spoiled the milk!');
 
 There are some built-in translators for log data u could use while baking ur own logger:
 
-- `jsonStringifyTranslator` – stringify log data `Logs.stringify(data)`
-- `stringifyErrorStackTranslator` – fairly serialize Error into string (used on Errors payload)
-- `sanitizeSensitiveTranslator` - sanitize any sensitive fields
-  defaults: `['password', 'token', 'secret', 'sessionId']`
+- `jsonStringifyTranslator` – safely stringify log data `Logs.stringify(data)`
+- `stringifyErrorStackTranslator` – fairly serialize Error correctly `Logs.stringifyError(error)`
+- `sanitizeSensitiveTranslator` - sanitize sensitive fields defaults: `['password', 'token', 'secret', 'sessionId']`
 
 **Note:** These translators applied either to a Single log call or to All logs by default, U could add Ur own too.
 
@@ -184,11 +185,13 @@ Otherwise, it's recommended to process raw logEntry in Ur particular output chan
 
 ---
 
-### License
+## License
 
 @tsjam/logger is [MIT licensed](https://github.com/am0wa/tsjam-logger/blob/main/LICENSE)
 
 ---
+
+[TSJam Logger Documentation](https://am0wa.github.io/tsjam-logger)
 
 @seeAlso
 
