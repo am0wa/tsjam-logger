@@ -52,10 +52,10 @@ export interface LogMethod {
 /**
  * Not Opinionated ts Logger with:
  * - appId (distinguish log between multiple instances)
- * - tags support (tag child loggers, find and filter certain logs super-fast)
- * - multiple channels output (you could add your own one: e.g. for parallel monitoring; @see `LoggerOptions`)
- * - sensitive fields sanitization (perf optimized, customizable: @see `LogContext`)
- * - stack output of any call (configurable: @see `LogContext`)
+ * - tags (tag child loggers, find & filter certain logs super-fast)
+ * - multiple channels output (add ur own one e.g. for parallel monitoring)
+ * - metadata (add any additional info to each log entry)
+ * @see {LoggerConfig} config to customize.
  */
 export interface Logger {
   readonly appId: string;
@@ -75,9 +75,7 @@ export interface Logger {
 export type StackConfig = {
   /** Show Error payload stack for level not less than specified. LogLevel.Error by default */
   readonly errorStackLevel?: LogLevel;
-  /**
-   * Trims Errors payload stack to number of lines.
-   */
+  /** Trims Errors payload stack to number of lines. */
   readonly trimStack?: number;
 };
 
