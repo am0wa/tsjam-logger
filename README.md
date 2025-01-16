@@ -23,7 +23,7 @@ Useful for parallel console output & remote monitoring 👩‍🚀
 - **fair Errors serialization** into string (check `JSON.stringify(new Error('Oops')); // {}`)
 - **sanitization** of sensitive fields (perf optimized, `Logs.sanitize({ password: 'ABC' })`)
 - **safe stringify** payload at any moment (`Logs.stringify(data)`)
-- **trim stack** to number of lines or fully cut (configurable,`{ trimStack: 3 }`)
+- **trim stack** to number of lines or fully cut (use config `{ trimStack: 2 }`)
 - **zero third-party dependencies**
 
 **Output example:**  
@@ -66,7 +66,7 @@ logger.info('Greetings for', { name: 'Bob' });
 ```typescript
 const logger = JamLogger.create({
   appId: `ioApp${Date.now()}`,
-  channels: [...defaultOutputChannels /* { out: MyKibanaOutput } */], // default output channel is ConsoleOutput
+  channels: [...defaultOutputChannels /* { out: MyKibanaOutput } */], // default is ConsoleOutput
 });
 const aiLogger = logger.taggeg('ai'); // child logger with #ai tag
 ```
@@ -105,21 +105,24 @@ Metadata is especially useful for remote reporting & monitoring.
 import { JamLogger } from '@tsjam/logger';
 
 const logger = JamLogger.create({
-   metadata: { userId: 007 }, // use it however U wish in ur output channel next to log entry
+  metadata: { userId: '007' }, // use it however U wish in ur output channel next to log entry
 });
 //...
-JamLogger.updateMeta(logger.appId, { userId: 546 }); // update metadata
+JamLogger.updateMeta(logger.appId, { userId: '456' }); // update metadata
+logger.info('Lets Play 🦑');
+// [app1737064023840][2025-01-16T21:47:03.840Z][info] Lets Play 🦑
+// meta: {"userId":"456"}
 ```
 
 Pass additional meta per call.
 
 ```typescript
 const logger = JamLogger.create({
-  metadata: { userId: 007 }, // use it however U wish in ur output channel next to log entry
+  metadata: { userId: '007' }, // use it however U wish in ur output channel next to log entry
 });
-logger.info('Whats Up?', LogMeta.bake({ drink: 'dry martini' }));
-// [app170723][2025-01-16T16:47:56.398Z][debug] Whats Up?
-// meta: { "userId": "007", "drink": "'dry martini' }"
+logger.info('Whats Up?', LogMeta.bake({ drink: 'dry martini 🍸' }));
+// [app170723][2025-01-16T23:10:56.102Z][info] Whats Up?
+// meta: { "userId": "007", "drink": "dry martini 🍸" }
 ```
 
 ## Cook per single call
@@ -136,7 +139,7 @@ Yet it's more perf optimized to sanitize only when needed.
 
 ### Stack Visibility
 
-Shown on Error payloads (same like console.log);
+Stack is shown on Error payloads (similar to console.log);
 
 ```typescript
 jamLogger.warn('Oops!', new Error('Something went wrong'));
@@ -149,7 +152,7 @@ jamLogger.warn('Oops!', new Error('Something went wrong'));
 Hide stack on Error payloads for specified levels
 
 ```typescript
-const logger = JamLogger.create({ errorStackLevel: LogLevel.Error });
+const logger = JamLogger.create({ errorStackLevel: LogLevel.Error }); // default WARN
 
 logger.warn('Oops!', new Error('Something went wrong'));
 // [app170723][2024-02-06T17:02:00.108Z][warn] Oops  Error: Something went wrong
@@ -162,7 +165,6 @@ const logger = JamLogger.create({ trimStack: 2 });
 logger.warn('Oops!', new Error('Spoiled the milk!'));
 // [app170723][2024-02-06T17:13:59.496Z][warn] Oops! Spoiled the milk! Stack:
 //   at Object.<anonymous> (...tsjam-logger/tests/logging/log.utils.spec.ts:10:15)
-//   at Promise.then.completed (...tsjam-logger/node_modules/jest-circus/build/utils.js:298:28)
 //   ...
 ```
 
