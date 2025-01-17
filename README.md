@@ -68,7 +68,7 @@ const logger = JamLogger.create({
   appId: `ioApp${Date.now()}`,
   channels: [...defaultOutputChannels /* { out: MyKibanaOutput } */], // default is ConsoleOutput
 });
-const aiLogger = logger.taggeg('ai'); // child logger with #ai tag
+const aiLogger = logger.tagged('ai'); // child logger with #ai tag
 ```
 
 ### Custom Output Channel
