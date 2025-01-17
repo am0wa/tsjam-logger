@@ -195,6 +195,8 @@ Otherwise, it's recommended to process raw logEntry in Ur particular output chan
 
 [TSJam Logger Documentation](https://am0wa.github.io/tsjam-logger)
 
+[NPM package](https://www.npmjs.com/package/@tsjam/logger)
+
 @seeAlso
 
 [TSJam API Documentation](https://am0wa.github.io/tsjam/modules.html)
