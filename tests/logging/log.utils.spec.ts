@@ -24,7 +24,7 @@ describe('log utils', () => {
   });
   it('sanitize should go deep', () => {
     const sensitive = { user: { name: 'bob', password: 'ABC' } };
-    const sanitized = Logs.sanitize(sensitive, true, ['password']);
+    const sanitized = Logs.sanitize(sensitive, ['password'], true);
     expect(sanitized.user.password).toEqual(stars);
   });
   it('should stringify error', () => {

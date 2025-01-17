@@ -53,32 +53,32 @@ export namespace Logs {
   /**
    * @default ['password', 'token', 'secret', 'sessionId']
    */
-  export const commonSensitiveFields = ['password', 'token', 'secret', 'sessionId'];
+  export const knownSensitiveFields: readonly string[] = ['password', 'token', 'secret', 'sessionId'];
 
   /**
    * Sanitizes sensitive fields e.g. // { password: '***' }
    * Supports primitives, objects and arrays.
    */
-  export const sanitize = <T>(data: T, deep = false, sensitiveFields: readonly string[] = commonSensitiveFields): T => {
+  export const sanitize = <T>(data: T, sensitiveFields = knownSensitiveFields, deep = false, mask = '***'): T => {
     if (!isObject(data)) {
       return data;
     }
     if (Array.isArray(data)) {
       // eslint-disable-next-line @typescript-eslint/consistent-type-assertions,@typescript-eslint/no-unsafe-return, @typescript-eslint/no-explicit-any
-      return data.map((one) => sanitize(one, deep, sensitiveFields)) as any;
+      return data.map((one) => sanitize(one, sensitiveFields, deep)) as any;
     }
     const sanitized = { ...data };
     Object.keys(sanitized).forEach((key) => {
       if (sensitiveFields.find((sensitive) => key.match(sensitive))) {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        sanitized[key] = '***';
+        sanitized[key] = mask;
       }
       const value = sanitized[key];
       if (isObject(value)) {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        sanitized[key] = sanitize(value, deep, sensitiveFields);
+        sanitized[key] = sanitize(value, sensitiveFields, deep);
       }
     });
     return sanitized;

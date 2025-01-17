@@ -7,6 +7,6 @@ import { LogMessage, LogTranslator } from '../types';
  */
 export const sanitizeSensitiveTranslator: LogTranslator<readonly string[]> = {
   map({ message, optionalParams }: LogMessage, sensitive): LogMessage {
-    return { message, optionalParams: Logs.sanitize(optionalParams, true, sensitive) };
+    return { message, optionalParams: Logs.sanitize(optionalParams, sensitive, true) };
   },
 };
