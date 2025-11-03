@@ -1,5 +1,5 @@
 import { LogLevel, LogLevels } from './level.enum';
-import { LogOutput, LogOutputChannel } from './types';
+import type { LogOutput, LogOutputChannel } from './types';
 
 const isSomething = <T>(x: T | undefined | null): x is NonNullable<T> => {
   return x != null;

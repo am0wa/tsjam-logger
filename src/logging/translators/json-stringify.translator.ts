@@ -1,5 +1,5 @@
 import { Logs } from '../log.utils';
-import { LogTranslator } from '../types';
+import type { LogTranslator } from '../types';
 
 /**
  * Invokes JSON.stringify on log data arguments.

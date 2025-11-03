@@ -4,7 +4,7 @@ import { LogMeta } from './log.meta';
 import { Logs } from './log.utils';
 import { LogOutputRegistry } from './output.registry';
 import { stringifyErrorStackTranslator } from './translators';
-import {
+import type {
   LogEntry,
   Logger,
   LoggerConfig,

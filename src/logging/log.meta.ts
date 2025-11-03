@@ -1,4 +1,4 @@
-import { LogTag } from './types';
+import type { LogTag } from './types';
 
 export namespace LogMeta {
   export const SYM = Symbol.for('logs.meta');

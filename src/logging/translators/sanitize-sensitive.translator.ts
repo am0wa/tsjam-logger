@@ -1,5 +1,5 @@
 import { Logs } from '../log.utils';
-import { LogMessage, LogTranslator } from '../types';
+import type { LogMessage, LogTranslator } from '../types';
 
 /**
  * Sanitizes all sensitive data that should not be exposed.

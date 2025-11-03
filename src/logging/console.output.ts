@@ -1,7 +1,7 @@
 import { LogLevel } from './level.enum';
 import { LogMeta } from './log.meta';
 import { Logs } from './log.utils';
-import { LogEntry, LogOutput } from './types';
+import type { LogEntry, LogOutput } from './types';
 
 export class ConsoleOutput implements LogOutput {
   static formatMessage({ date, appId, level, tags, message, stack }: LogEntry): string {
