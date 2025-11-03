@@ -10,7 +10,7 @@ export class ConsoleOutput implements LogOutput {
 
   showMeta = true;
 
-  private readonly logMethods = {
+  protected readonly logMethods = {
     [LogLevel.Debug]: console.debug.bind(console),
     [LogLevel.Info]: console.info.bind(console),
     [LogLevel.Warn]: console.warn.bind(console),

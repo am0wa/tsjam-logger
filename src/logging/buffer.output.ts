@@ -5,8 +5,8 @@ export class BufferOutput implements LogOutput {
   readonly buffer: LogEntry[] = [];
 
   constructor(
-    private readonly maxLogEntries = 200,
-    private readonly flushOnOverload = false,
+    protected readonly maxLogEntries = 200,
+    protected readonly flushOnOverload = false,
   ) {}
 
   write(entry: LogEntry): void {
