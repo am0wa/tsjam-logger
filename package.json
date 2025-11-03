@@ -1,9 +1,10 @@
 {
   "name": "@tsjam/logger",
-  "version": "2.0.5",
+  "version": "2.1.0",
   "description": "Vanilla TypeScript Logger with multiple output channels",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
+  "type": "module",
   "repository": "https://github.com/am0wa/tsjam-logger",
   "license": "MIT",
   "keywords": [
@@ -22,6 +23,7 @@
     "patch-version": "npm version patch",
     "prepublishOnly": "npm run clean && npm run build && npm run test",
     "postpublish": "git push --tags origin",
+    "format": "prettier './**/**.{js,jsx,ts,tsx,css,scss}' --write",
     "prepare": "husky"
   },
   "files": [
@@ -29,11 +31,22 @@
     "tsconfig.json",
     "!**/tsconfig.tsbuildinfo"
   ],
+  "exports": {
+    ".": {
+      "node": {
+        "import": "./lib/index.js",
+        "types": "./lib/index.d.ts"
+      },
+      "import": "./lib/index.js",
+      "types": "./lib/index.d.ts"
+    }
+  },
   "devDependencies": {
     "@tsjam/eslint-config-recommended": "^0.2.3",
     "@tsjam/jest-config-recommended": "^0.4.3",
     "@tsjam/web-config-base": "^0.3.1",
     "gh-pages": "^6.3.0",
+    "prettier": "^3.6.2",
     "typedoc": "^0.27.9",
     "typescript": "^5.8.3"
   },

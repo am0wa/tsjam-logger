@@ -1,9 +1,9 @@
-import { ConsoleOutput } from './console.output';
-import { LogLevel, LogLevels } from './level.enum';
-import { LogMeta } from './log.meta';
-import { Logs } from './log.utils';
-import { LogOutputRegistry } from './output.registry';
-import { stringifyErrorStackTranslator } from './translators';
+import { ConsoleOutput } from './console.output.js';
+import { LogLevel, LogLevels } from './level.enum.js';
+import { LogMeta } from './log.meta.js';
+import { Logs } from './log.utils.js';
+import { LogOutputRegistry } from './output.registry.js';
+import { stringifyErrorStackTranslator } from './translators/stringify-error.translator.js';
 import type {
   LogEntry,
   Logger,
@@ -14,7 +14,7 @@ import type {
   LogTag,
   LogTranslator,
   StackConfig,
-} from './types';
+} from './types.js';
 
 const emptyTranslator: LogTranslator = {
   map: (logMessage: LogMessage) => logMessage,

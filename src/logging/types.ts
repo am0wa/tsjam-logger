@@ -1,6 +1,6 @@
-import { LogLevel } from './level.enum';
-import { LogMeta } from './log.meta';
-import { LogOutputRegistry } from './output.registry';
+import { LogLevel } from './level.enum.js';
+import { LogMeta } from './log.meta.js';
+import { LogOutputRegistry } from './output.registry.js';
 
 /**
  * String label for quick search across logs.

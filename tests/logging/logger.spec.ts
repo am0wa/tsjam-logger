@@ -1,4 +1,4 @@
-import { JamLogger, jamLogger, LogEntry, LogMeta, LogOutput } from 'logging';
+import { JamLogger, jamLogger, type LogEntry, LogMeta, type LogOutput } from 'logging/index.js';
 
 describe('logger', () => {
   xit('should use cache if same child logger exists', () => {

@@ -1,5 +1,5 @@
-import { Logs } from '../log.utils';
-import type { LogTranslator } from '../types';
+import { Logs } from '../log.utils.js';
+import type { LogTranslator } from '../types.js';
 
 /**
  * Invokes JSON.stringify on log data arguments.

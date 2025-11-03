@@ -1,4 +1,4 @@
-import { LogMeta } from 'logging';
+import { LogMeta } from 'logging/log.meta.js';
 
 describe('log meta', () => {
   it('should be able to create signed metadata', () => {

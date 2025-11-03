@@ -1,4 +1,4 @@
-import { Logs } from 'logging/log.utils';
+import { Logs } from 'logging/log.utils.js';
 
 const stars = '***';
 

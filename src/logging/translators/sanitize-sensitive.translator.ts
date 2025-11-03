@@ -1,5 +1,5 @@
-import { Logs } from '../log.utils';
-import type { LogMessage, LogTranslator } from '../types';
+import { Logs } from '../log.utils.js';
+import type { LogMessage, LogTranslator } from '../types.js';
 
 /**
  * Sanitizes all sensitive data that should not be exposed.

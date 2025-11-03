@@ -1,5 +1,5 @@
-import { ConsoleOutput } from './console.output';
-import type { LogEntry, LogOutput } from './types';
+import { ConsoleOutput } from './console.output.js';
+import type { LogEntry, LogOutput } from './types.js';
 
 export class BufferOutput implements LogOutput {
   readonly buffer: LogEntry[] = [];

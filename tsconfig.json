@@ -1,7 +1,10 @@
 {
   "extends": "@tsjam/web-config-base/tsconfig.base.json",
   "compilerOptions": {
-    "target": "es2020", // ES9
+    "module": "NodeNext",
+    "target": "ES2024",
+    "moduleResolution": "nodenext",
+    "allowJs": true,
     /* Paths */
     "baseUrl": ".",
     "outDir": "lib",
@@ -9,9 +12,5 @@
       "*": ["*", "src/*"]
     }
   },
-  "exclude": [
-    "lib/*",
-    "packages/*",
-    "node_modules/**"
-  ]
+  "exclude": ["lib/*", "packages/*", "node_modules/**"]
 }

@@ -1,9 +1,13 @@
 {
   "extends": "../tsconfig.json",
-  "include": ["./**/*.ts"], // if in root = [tests/**/*.ts]
   "compilerOptions": {
-    "types": ["node","jest"],
+    "target": "ESNext",
+    "module": "ESNext", // important: jest crashes to resolve module: NodeNext!
+    "moduleResolution": "bundler",
+    "types": ["node", "jest"],
     "noImplicitReturns": false,
-    "noUnusedParameters": false
+    "noUnusedParameters": false,
+    "isolatedModules": true,
+    "allowJs": true
   }
 }
