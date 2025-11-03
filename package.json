@@ -30,14 +30,14 @@
     "!**/tsconfig.tsbuildinfo"
   ],
   "devDependencies": {
-    "@tsjam/eslint-config-recommended": "^0.2.1",
-    "@tsjam/jest-config-recommended": "^0.2.1",
-    "@tsjam/web-config-base": "^0.2.0",
+    "@tsjam/eslint-config-recommended": "^0.2.3",
+    "@tsjam/jest-config-recommended": "^0.4.3",
+    "@tsjam/web-config-base": "^0.3.1",
     "gh-pages": "^6.3.0",
-    "typedoc": "^0.27.6",
-    "typescript": "^5.7.2"
+    "typedoc": "^0.27.9",
+    "typescript": "^5.8.3"
   },
-  "prettier": "@tsjam/web-config-base/prettier.config.js",
+  "prettier": "@tsjam/web-config-base/prettier.config.mjs",
   "lint-staged": {
     "*.{ts,tsx,js}": "eslint --cache --fix",
     "*.{ts,tsx,js,css,md}": "prettier --write"

@@ -1,7 +1,7 @@
 {
   "extends": "@tsjam/web-config-base/tsconfig.base.json",
   "compilerOptions": {
-    "target": "es2018", // ES9
+    "target": "es2020", // ES9
     /* Paths */
     "baseUrl": ".",
     "outDir": "lib",
