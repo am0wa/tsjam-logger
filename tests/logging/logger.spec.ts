@@ -70,6 +70,19 @@ describe('logger', () => {
     expect(child.tagged('extra')).not.toBe(child);
     expect(child.tagged('extra').tags).toEqual(['extra', 'root', 'user']);
   });
+  it('should apply one-off tags per call without polluting meta', () => {
+    let actual: LogEntry | undefined;
+    const testOut: LogOutput = { write: (entry) => (actual = entry) };
+    const logger = JamLogger.create({ channels: [{ out: testOut }], tags: ['app'] });
+
+    logger.info('cache rebuilt', LogMeta.tag('startup'));
+    expect(actual?.tags).toEqual(['app', 'startup']);
+    expect(actual?.data).toEqual([]); // tag meta is not payload
+    expect(LogMeta.isEmpty(actual?.meta ?? LogMeta.EMPTY)).toBe(true); // nothing leaks into meta
+
+    logger.info('next entry');
+    expect(actual?.tags).toEqual(['app']); // one-off tag applied to a single entry only
+  });
   it('should not duplicate payload args when no meta is passed', () => {
     let actual: LogEntry | undefined;
     const testOut: LogOutput = { write: (entry) => (actual = entry) };

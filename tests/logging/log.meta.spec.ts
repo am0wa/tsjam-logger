@@ -10,6 +10,15 @@ describe('log meta', () => {
 
     console.log(Object.entries(meta));
   });
+  it('should bake one-off tags hidden from meta payload', () => {
+    const meta = LogMeta.tag('startup', 'cache');
+    expect(LogMeta.isSigned(meta)).toBe(true);
+    expect(meta.tags).toEqual(['startup', 'cache']);
+    expect(Object.keys(meta)).toEqual([]); // not enumerable – stays out of the meta printout
+    expect(LogMeta.isEmpty(meta)).toBe(true); // nothing to merge into entry meta
+
+    expect(LogMeta.tag()).toBe(LogMeta.EMPTY);
+  });
   it('empty metas have to lead to same ref', () => {
     const empty = LogMeta.EMPTY;
     expect(LogMeta.isEmpty(empty)).toBe(true);
