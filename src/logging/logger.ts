@@ -20,7 +20,7 @@ const emptyTranslator: LogTranslator = {
   map: (logMessage: LogMessage) => logMessage,
 };
 
-export const defaultOutputChannels: readonly LogOutputChannel[] = [{ out: new ConsoleOutput() }];
+export const defaultOutputChannels: readonly LogOutputChannel[] = [{ out: new ConsoleOutput(), name: 'console' }];
 
 export class JamLogger implements Logger {
   /** Logger with same config would be created only once and shared across the app */

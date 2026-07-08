@@ -33,6 +33,8 @@ export interface LogOutput {
 export type LogOutputChannel = {
   readonly out: LogOutput;
   readonly level?: LogLevel;
+  /** Optional name to address the channel at runtime, e.g. `logger.channels.setLevel('console', LogLevel.Debug)` */
+  readonly name?: string;
 };
 
 export type LogMessage = {

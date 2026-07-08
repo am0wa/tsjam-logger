@@ -23,7 +23,7 @@ coverage
 # misc
 .DS_Store
 .env.*
-
+.npmrc
 
 # ide
 .idea/*
@@ -33,9 +33,6 @@ coverage
 
 # cache
 .eslintcache
-
-# docs
-/docs
 
 # local package unpack
 /package

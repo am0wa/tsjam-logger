@@ -104,6 +104,21 @@ const logger = JamLogger.create({
 });
 ```
 
+Change a channel's level at runtime — e.g. bump verbosity mid-incident without redeploying.
+Runtime-addressable ⇔ named: give the channel a `name` (the default console channel is named `'console'`):
+
+```typescript
+const logger = JamLogger.create({
+  channels: [...defaultOutputChannels, { out: myKibanaOutput, level: LogLevel.Warn, name: 'kibana' }],
+});
+
+logger.channels.setLevel('kibana', LogLevel.Debug); // e.g. from devtools console
+logger.channels.getLevel('kibana'); // 'debug'
+logger.channels.names(); // runtime-addressable channel names, e.g. ['console', 'kibana']
+```
+
+**Note:** the registry is shared by all child loggers of the instance — a level change affects them all.
+
 ### Buffering
 
 Use simplistic `BufferOutput` to buffer logs for any crash reporting or remote monitoring.
