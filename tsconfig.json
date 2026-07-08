@@ -1,12 +1,12 @@
 {
-  "extends": "@tsjam/web-config-base/tsconfig.base.json",
+  "extends": "@tsjam/tsconfig-bases/tsconfig.node.json",
   "compilerOptions": {
     "module": "NodeNext",
     "target": "ES2024",
     "moduleResolution": "nodenext",
     "allowJs": true,
     /* Paths */
-    "baseUrl": ".",
+    "rootDir": ".",
     "outDir": "lib",
     "paths": {
       "*": ["*", "src/*"]

@@ -5,6 +5,7 @@
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "type": "module",
+  "sideEffects": false,
   "repository": "https://github.com/am0wa/tsjam-logger",
   "license": "MIT",
   "keywords": [
@@ -17,7 +18,7 @@
     "build": "tsc -b src/tsconfig.json",
     "clean": "rimraf lib",
     "lint": "eslint src",
-    "test": "jest --config jest.config.js",
+    "test": "jest --config jest.config.mjs",
     "doc:html": "typedoc src/ --exclude **/*.spec.ts --out docs",
     "doc:publish": "gh-pages -m \"[ci skip] Updates\" -d docs",
     "patch-version": "npm version patch",
@@ -41,15 +42,18 @@
     "./package.json": "./package.json"
   },
   "devDependencies": {
-    "@tsjam/eslint-config-recommended": "^0.2.3",
-    "@tsjam/jest-config-recommended": "^0.4.3",
-    "@tsjam/web-config-base": "^0.3.1",
+    "@tsjam/lint-config": "^1.0.0",
+    "@tsjam/swc-jest-config-recommended": "^0.1.4",
+    "@tsjam/tsconfig-bases": "^1.1.0",
+    "@types/jest": "^30.0.0",
     "gh-pages": "^6.3.0",
-    "prettier": "^3.6.2",
+    "husky": "^9.1.7",
+    "jest": "^30.4.2",
+    "prettier": "^3.8.5",
     "typedoc": "^0.27.9",
     "typescript": "^5.8.3"
   },
-  "prettier": "@tsjam/web-config-base/prettier.config.mjs",
+  "prettier": "@tsjam/lint-config/prettier.config.mjs",
   "lint-staged": {
     "*.{ts,tsx,js}": "eslint --cache --fix",
     "*.{ts,tsx,js,css,md}": "prettier --write"

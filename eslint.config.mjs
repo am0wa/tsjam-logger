@@ -1,4 +1,4 @@
-import jamEslint from '@tsjam/eslint-config-recommended';
+import jamEslint from '@tsjam/lint-config';
 
 console.info('Linting..🕵️', jamEslint.configs.recommendedTS);
 
@@ -7,7 +7,7 @@ console.info('Linting..🕵️', jamEslint.configs.recommendedTS);
  */
 export default [
   {
-    ignores: ['node_modules', 'lib', 'dist', "**/*.config.js"],
+    ignores: ['node_modules', 'lib', 'dist', '**/*.config.js'],
     languageOptions: {
       parserOptions: {
         projectService: true,
