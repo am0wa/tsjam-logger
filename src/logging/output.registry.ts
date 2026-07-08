@@ -20,13 +20,15 @@ export class LogOutputRegistry {
   }
 
   byLogLevel(level: LogLevel): readonly LogOutput[] {
-    const outputs =
-      this.byLevelCache.get(level) ??
-      Array.from(
-        this.outputs,
-        // output everything that is equal or higher by severity
-        ([output, outLvl]) => (LogLevels.severity(level) >= LogLevels.severity(outLvl) ? output : undefined),
-      ).filter(isSomething);
+    const cached = this.byLevelCache.get(level);
+    if (cached) {
+      return cached;
+    }
+    const outputs = Array.from(
+      this.outputs,
+      // output everything that is equal or higher by severity
+      ([output, outLvl]) => (LogLevels.severity(level) >= LogLevels.severity(outLvl) ? output : undefined),
+    ).filter(isSomething);
     this.byLevelCache.set(level, outputs);
 
     return outputs;

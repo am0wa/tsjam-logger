@@ -1,4 +1,4 @@
-import { JamLogger, jamLogger, type LogEntry, LogMeta, type LogOutput } from 'logging/index.js';
+import { JamLogger, jamLogger, type LogEntry, LogLevel, LogMeta, type LogOutput } from 'logging/index.js';
 
 describe('logger', () => {
   xit('should use cache if same child logger exists', () => {
@@ -57,5 +57,32 @@ describe('logger', () => {
 
     logger.warn('Oops!', new Error('Spoiled the milk!'));
     expect(actual?.data).toEqual(['Error: Spoiled the milk!']);
+  });
+  it('should not duplicate payload args when no meta is passed', () => {
+    let actual: LogEntry | undefined;
+    const testOut: LogOutput = { write: (entry) => (actual = entry) };
+    const logger = JamLogger.create({ channels: [{ out: testOut }] });
+
+    logger.debug('Hi', { payload: 'Coffee' }, { payload: 'Beer' });
+    expect(actual?.message).toBe('Hi');
+    expect(actual?.data).toEqual([{ payload: 'Coffee' }, { payload: 'Beer' }]);
+  });
+  it('should skip all processing when no channel accepts the level', () => {
+    const written: LogEntry[] = [];
+    const testOut: LogOutput = { write: (entry) => written.push(entry) };
+    const translator = { map: jest.fn((logMessage) => logMessage) };
+    const logger = JamLogger.create({
+      channels: [{ out: testOut, level: LogLevel.Warn }],
+      translator,
+    });
+
+    logger.debug('Nobody is listening');
+    logger.info('Nobody is listening');
+    expect(written).toEqual([]);
+    expect(translator.map).not.toHaveBeenCalled();
+
+    logger.warn('Somebody is listening');
+    expect(written.length).toBe(1);
+    expect(translator.map).toHaveBeenCalledTimes(1);
   });
 });

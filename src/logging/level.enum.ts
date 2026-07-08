@@ -9,11 +9,14 @@ export enum LogLevel {
 
 export namespace LogLevels {
   export const all = <const>[LogLevel.Debug, LogLevel.Info, LogLevel.Warn, LogLevel.Error, LogLevel.Silent];
+
+  const severityByLevel = new Map<LogLevel, number>(all.map((level, idx) => [level, idx]));
+
   /**
    * Returns the severity level – lower ones would be skipped.
    * @see {LogLevel}
    */
   export const severity = (level: LogLevel = LogLevel.Debug): number => {
-    return all.indexOf(level);
+    return severityByLevel.get(level) ?? -1;
   };
 }

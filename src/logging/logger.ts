@@ -100,8 +100,14 @@ export class JamLogger implements Logger {
    * @param args – optionalParams. Note: `LogMeta` could be among arguments (nearly last).
    */
   logMessage(level: LogLevel, tags: readonly LogTag[], ...args: unknown[]): void {
+    if (this.channels.byLogLevel(level).length === 0) {
+      return; // no output accepts this level – skip all processing
+    }
+
+    const hasMessage = typeof args[0] === 'string';
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-    const message = typeof args[0] === 'string' ? (args.shift() as string) : '';
+    const message = hasMessage ? (args[0] as string) : '';
+    const payloadStart = hasMessage ? 1 : 0;
 
     const metaIdx = args.findIndex(LogMeta.isSigned);
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
@@ -109,7 +115,8 @@ export class JamLogger implements Logger {
 
     let logMessage: LogMessage = {
       message,
-      optionalParams: [...args.slice(0, metaIdx), ...args.slice(metaIdx + 1)],
+      optionalParams:
+        metaIdx === -1 ? args.slice(payloadStart) : [...args.slice(payloadStart, metaIdx), ...args.slice(metaIdx + 1)],
     };
 
     const hasErrorPayload = logMessage.optionalParams.some((one) => one instanceof Error);

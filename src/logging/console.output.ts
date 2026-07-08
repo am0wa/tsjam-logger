@@ -23,6 +23,10 @@ export class ConsoleOutput implements LogOutput {
     }
     const restData = entry.data ?? [];
     const meta = !this.showMeta || LogMeta.isEmpty(entry.meta) ? '' : `\nmeta: ${Logs.stringify(entry.meta)}`;
-    this.logMethods[entry.level](ConsoleOutput.formatMessage(entry), ...restData, meta);
+    if (meta) {
+      this.logMethods[entry.level](ConsoleOutput.formatMessage(entry), ...restData, meta);
+    } else {
+      this.logMethods[entry.level](ConsoleOutput.formatMessage(entry), ...restData);
+    }
   }
 }
