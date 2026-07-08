@@ -80,18 +80,27 @@ export class JamLogger implements Logger {
   readonly debug: LogMethod = (...args) => this.logMessage(LogLevel.Debug, this.tags, ...args);
 
   tagged(...tags: LogTag[]): Logger {
-    const nextTags = [...new Set([...this.tags, ...tags])].sort(); // unique and sorted
+    return this.createTagged(this, tags);
+  }
 
-    return {
+  protected createTagged(parent: Logger, tags: readonly LogTag[]): Logger {
+    const nextTags = [...new Set([...parent.tags, ...tags])].sort(); // unique and sorted
+    // idempotency short-circuit: no new tags – reuse the same logger instead of recreating an identical child
+    if (nextTags.length === parent.tags.length) {
+      return parent;
+    }
+
+    const child: Logger = {
       appId: this.appId,
       channels: this.channels,
-      tagged: this.tagged.bind(this, ...nextTags), // preserve the ability to chain
+      tagged: (...more: readonly LogTag[]) => this.createTagged(child, more), // preserve the ability to chain
       error: (...args) => this.logMessage(LogLevel.Error, nextTags, ...args),
       warn: (...args) => this.logMessage(LogLevel.Warn, nextTags, ...args),
       info: (...args) => this.logMessage(LogLevel.Info, nextTags, ...args),
       debug: (...args) => this.logMessage(LogLevel.Debug, nextTags, ...args),
       tags: nextTags,
     };
+    return child;
   }
 
   /**

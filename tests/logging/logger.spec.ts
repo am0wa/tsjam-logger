@@ -58,6 +58,18 @@ describe('logger', () => {
     logger.warn('Oops!', new Error('Spoiled the milk!'));
     expect(actual?.data).toEqual(['Error: Spoiled the milk!']);
   });
+  it('should return same logger when tags bring nothing new', () => {
+    const root = JamLogger.create({ tags: ['root'] });
+    expect(root.tagged()).toBe(root);
+    expect(root.tagged('root')).toBe(root);
+
+    const child = root.tagged('user');
+    expect(child).not.toBe(root);
+    expect(child.tagged('user')).toBe(child);
+    expect(child.tagged('root', 'user')).toBe(child);
+    expect(child.tagged('extra')).not.toBe(child);
+    expect(child.tagged('extra').tags).toEqual(['extra', 'root', 'user']);
+  });
   it('should not duplicate payload args when no meta is passed', () => {
     let actual: LogEntry | undefined;
     const testOut: LogOutput = { write: (entry) => (actual = entry) };

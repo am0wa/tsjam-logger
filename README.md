@@ -61,6 +61,12 @@ logger.info('Greetings for', { name: 'Bob' });
 // [app161125][2024-01-21T18:33:02.981Z][info][#user] Greetings for { name: 'Bob' }
 ```
 
+**Note:** create child loggers once at module scope and reuse them — each child is clean & stateless
+and costs ~120 ns and ~560 bytes for the app lifetime
+(better choice than keeping a registry map or inheriting the parent).
+For one-off tags use `LogMeta.bake({ tags: [...] })` per call.
+Tagging with already-present tags returns the same logger instance (no extra allocation).
+
 ## Bake Own Logger
 
 ```typescript
