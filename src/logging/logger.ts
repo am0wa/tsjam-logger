@@ -35,6 +35,30 @@ export class JamLogger implements Logger {
     return instance;
   }
 
+  private static readonly muted = new Set<LogTag>();
+
+  /**
+   * Mutes log entries carrying any of the given tags at runtime.
+   * Global – affects all logger instances, children and every output channel (including remote/buffer outputs).
+   */
+  static mute(...tags: readonly LogTag[]): void {
+    tags.forEach((tag) => JamLogger.muted.add(tag));
+  }
+
+  /** Unmutes the given tags. Called with no arguments – unmutes all. */
+  static unmute(...tags: readonly LogTag[]): void {
+    if (tags.length === 0) {
+      JamLogger.muted.clear();
+      return;
+    }
+    tags.forEach((tag) => JamLogger.muted.delete(tag));
+  }
+
+  /** Live view of currently muted tags */
+  static get mutedTags(): ReadonlySet<LogTag> {
+    return JamLogger.muted;
+  }
+
   private static metaMap = new Map<string, LogMeta>();
 
   static updateMeta(appId: string, metadata: Record<string, unknown>): LogMeta {
@@ -122,6 +146,11 @@ export class JamLogger implements Logger {
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     const argsMeta: LogMeta = metaIdx === -1 ? LogMeta.EMPTY : (args[metaIdx] as LogMeta);
 
+    const entryTags = argsMeta.tags?.length ? tags.concat(argsMeta.tags) : tags;
+    if (JamLogger.muted.size > 0 && entryTags.some((tag) => JamLogger.muted.has(tag))) {
+      return; // tag muted at runtime – skip the expensive processing too
+    }
+
     let logMessage: LogMessage = {
       message,
       optionalParams:
@@ -142,7 +171,7 @@ export class JamLogger implements Logger {
       appId: this.appId,
       date: new Date(),
       level,
-      tags: argsMeta.tags?.length ? tags.concat(argsMeta.tags) : tags,
+      tags: entryTags,
       message: logMessage.message,
       data: logMessage.optionalParams,
       meta: LogMeta.isEmpty(argsMeta) ? this.metadata : { ...this.metadata, ...argsMeta },

@@ -68,6 +68,18 @@ For a quick one-off tag use `jamLogger.info('cache rebuilt', LogMeta.tag('startu
 it tags that single entry only, no wrapper logger created.
 Tagging with already-present tags returns the same logger instance (no extra allocation).
 
+### Mute / Unmute by tag
+
+Silence noisy tags at runtime — muted entries are dropped before any processing, for all output channels.
+Note: Muted logs skip all the expensive work
+
+```typescript
+JamLogger.mute('noisy'); // global: all logger instances, children & channels
+jamLogger.tagged('noisy').info('nobody hears me');
+
+JamLogger.unmute('noisy'); // or JamLogger.unmute() to unmute all
+```
+
 ## Bake Own Logger
 
 ```typescript
